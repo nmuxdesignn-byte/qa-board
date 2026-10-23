@@ -1,0 +1,457 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>QA Review System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0A0C; --surface:#121214; --surface2:#17171B; --raised:#1D1D22;
+  --line:#242428; --line2:#303036; --txt:#ECECEF; --mut:#90909B; --faint:#5A5A64;
+  --primary:#FFFFFF; --onprimary:#0A0A0C; --brand:#A24BCF;
+  --blocker:#E24B6A; --high:#E6A83C; --medium:#4C9BD6; --low:#6C6C76;
+  --open:#83838E; --prog:#E6A83C; --fixed:#36B37E; --wont:#52525A;
+  --dev-Web:#4C9BD6; --dev-MWeb:#E6A83C; --dev-Mobile:#36B37E; --dev-Tab:#A24BCF;
+  --font-disp:'Space Grotesk',Inter,system-ui,sans-serif;
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239494a0' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+button{font-family:inherit;cursor:pointer;color:inherit}
+select{appearance:none;-webkit-appearance:none;background-image:var(--chev);background-repeat:no-repeat;background-position:right 11px center;padding-right:30px!important}
+
+.top{position:sticky;top:0;z-index:40;background:rgba(10,10,12,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;height:54px}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--font-disp);font-weight:600;font-size:14.5px;letter-spacing:-.01em;cursor:pointer}
+.brand .mk{width:22px;height:22px;border-radius:6px;background:var(--brand);display:grid;place-items:center}
+.back{border:1px solid var(--line2);background:var(--surface);border-radius:8px;padding:6px 11px;font-size:12.5px;display:flex;align-items:center;gap:6px}
+.back:hover{border-color:var(--primary)}
+.crumb{color:var(--mut);font-size:12.5px;display:flex;gap:7px;align-items:center}
+.crumb b{color:var(--txt)}
+.topright{margin-left:auto;display:flex;align-items:center;gap:6px}
+.syncbadge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--mut);margin-right:6px;font-family:'JetBrains Mono',monospace}
+.syncdot{width:7px;height:7px;border-radius:50%;background:var(--mut)}
+.tbtn{border:1px solid var(--line2);background:var(--surface);color:var(--mut);border-radius:8px;padding:6px 10px;font-size:12px}
+.tbtn:hover{border-color:var(--primary);color:var(--txt)}
+
+.hero{padding:40px 0 6px}
+h1{font-family:var(--font-disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(26px,3.4vw,36px);margin:0 0 8px;line-height:1.05}
+.lede{color:var(--mut);max-width:600px;margin:0;font-size:14px}
+.secrow{display:flex;align-items:baseline;justify-content:space-between;margin:28px 0 14px}
+.secrow h2{font-family:var(--font-disp);font-size:13px;letter-spacing:.02em;text-transform:uppercase;color:var(--mut);margin:0;font-weight:600}
+.secrow .meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;padding-bottom:60px}
+.card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;cursor:pointer;transition:border-color .15s,transform .15s;min-height:190px;display:flex;flex-direction:column}
+.card:hover{border-color:var(--line2);transform:translateY(-2px)}
+.ring{position:absolute;top:16px;right:16px;width:40px;height:40px}
+.ring .pct{font-family:'JetBrains Mono',monospace;font-size:10px;fill:var(--mut)}
+.card h3{font-family:var(--font-disp);font-size:20px;font-weight:600;margin:0 0 10px;letter-spacing:-.01em;max-width:80%}
+.devpills{display:flex;gap:6px;margin-bottom:auto}
+.dpill{font-size:11px;font-weight:500;border:1px solid var(--line2);border-radius:999px;padding:3px 10px;color:var(--mut)}
+.bignums{display:flex;gap:26px;margin:18px 0 14px}
+.bignums .n{font-family:var(--font-disp);font-weight:600;font-size:28px;line-height:1}
+.bignums .l{font-size:11px;color:var(--mut);margin-top:4px}
+.bignums .blk .n{color:var(--blocker)}
+.cardfoot{display:flex;align-items:center;justify-content:space-between}
+.cdate{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint)}
+.carddate{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--mut);border:1px solid var(--line2);border-radius:999px;padding:3px 10px}
+.goarrow{width:34px;height:34px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;font-size:16px;color:var(--mut);transition:.15s}
+.card.newflow{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;border-style:dashed;border-color:var(--line2);background:transparent}
+.card.newflow:hover{border-color:var(--primary);transform:translateY(-2px)}
+.nf-plus{width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;font-size:22px;color:var(--mut);margin:0}
+.card.newflow:hover .nf-plus{border-color:var(--primary);color:var(--txt)}
+.nf-label{font-family:var(--font-disp);font-weight:600;font-size:16px}
+.nf-sub{color:var(--mut);font-size:12px;margin:0}
+.card.newflow.editing{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;cursor:default;padding:24px}
+.card.newflow.editing .nf-plus{margin:0}
+.nf-input{background:var(--surface2);border:1px solid var(--line2);border-radius:9px;color:var(--txt);padding:9px 12px;font-size:14px;font-weight:600;width:min(220px,82%);text-align:center}
+.nf-input:focus{outline:2px solid var(--primary);border-color:var(--primary)}
+.nf-acts{display:flex;gap:10px;justify-content:center}
+.card:hover .goarrow{background:var(--primary);border-color:var(--primary);color:var(--onprimary);transform:translateX(2px)}
+
+.fhead{padding:30px 0 4px}
+.fhead .t{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.fhead h1{margin:0}
+.fsub{color:var(--mut);font-size:13px;margin:6px 0 0}
+
+.tabsbar{position:sticky;top:54px;z-index:30;background:rgba(10,10,12,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);margin-top:18px}
+.tabs{display:flex;gap:4px}
+.tab{position:relative;background:transparent;border:0;padding:15px 4px;margin-right:24px;font-size:15px;font-weight:500;color:var(--mut);display:flex;align-items:center;gap:7px}
+.tab:hover{color:var(--txt)}
+.tab[aria-selected=true]{color:var(--txt);font-weight:600}
+.tab[aria-selected=true]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--primary);border-radius:2px}
+.tab .cnt{font-family:'JetBrains Mono',monospace;font-size:13.5px;font-weight:600;color:var(--mut);padding-left:2px}
+.tab[data-v="all"] .cnt{color:var(--txt)}
+.tab[data-v="active"] .cnt{color:var(--high)}
+.tab[data-v="done"] .cnt{color:var(--fixed)}
+
+.ctrls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 0}
+.pills{display:flex;gap:7px;flex-wrap:wrap}
+.pill{border:1px solid var(--line2);background:var(--surface);color:var(--mut);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:500}
+.pill[aria-pressed=true]{background:var(--txt);color:var(--bg);border-color:var(--txt)}
+.rightctl{margin-left:auto;display:flex;align-items:center;gap:8px}
+.iconbtn{border:1px solid var(--line2);background:var(--surface);border-radius:9px;width:34px;height:34px;display:grid;place-items:center;color:var(--mut)}
+.iconbtn:hover{border-color:var(--primary);color:var(--txt)}
+.iconbtn[aria-pressed=true]{border-color:var(--primary);color:var(--primary)}
+.filterbtn{border:1px solid var(--line2);background:var(--surface);border-radius:9px;padding:7px 12px;font-size:12.5px;color:var(--txt);display:flex;align-items:center;gap:7px}
+.filterbtn[aria-pressed=true]{border-color:var(--primary)}
+.filterbtn .badge{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--primary);color:var(--onprimary);border-radius:999px;padding:0 6px}
+.searchbox{overflow:hidden;width:0;transition:width .2s;display:flex}
+.searchbox.open{width:220px}
+.searchbox input{width:100%;background:var(--surface);border:1px solid var(--line2);border-radius:9px;color:var(--txt);padding:8px 11px;font-size:13px}
+.searchbox input:focus{outline:2px solid var(--primary);border-color:var(--primary)}
+.addbtn{border:1px solid var(--primary);background:var(--primary);color:var(--onprimary);border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600}
+.addbtn:hover{filter:brightness(.92)}
+
+.fpanel{display:none;gap:30px;flex-wrap:wrap;padding:14px 16px;background:var(--surface);border:1px solid var(--line2);border-radius:12px;margin:0 0 6px}
+.fpanel.on{display:flex;border-color:transparent;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.55) 0 10px,transparent 10px 20px),repeating-linear-gradient(90deg,rgba(255,255,255,.55) 0 10px,transparent 10px 20px),repeating-linear-gradient(180deg,rgba(255,255,255,.55) 0 10px,transparent 10px 20px),repeating-linear-gradient(180deg,rgba(255,255,255,.55) 0 10px,transparent 10px 20px);background-size:100% 1.5px,100% 1.5px,1.5px 100%,1.5px 100%;background-position:0 0,0 100%,0 0,100% 0;background-repeat:no-repeat}
+.fgroup{display:flex;flex-direction:column;gap:8px}
+.fgroup .lab{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.fgroup .opts{display:flex;gap:7px;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.seg button{background:transparent;border:0;padding:6px 12px;font-size:12px;color:var(--mut)}
+.seg button+button{border-left:1px solid var(--line2)}
+.seg button[aria-pressed=true]{background:var(--primary);color:var(--onprimary);font-weight:600}
+.tchip{border:1px solid var(--line2);background:var(--surface2);color:var(--mut);border-radius:7px;padding:5px 10px;font-size:12px}
+.tchip[aria-pressed=true]{background:var(--txt);color:var(--bg);border-color:var(--txt)}
+
+.board{padding:16px 0 90px}
+.tier{margin-bottom:24px}
+.tierhead{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.td{width:9px;height:9px;border-radius:50%}
+.tierhead h4{font-family:var(--font-disp);font-size:13.5px;margin:0;font-weight:600}
+.tierhead .ct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mut)}
+.tierhead .note{color:var(--faint);font-size:11.5px}
+.tierhead .rule{flex:1;height:1px;background:var(--line)}
+
+.item{display:flex;align-items:flex-start;gap:13px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px 16px;margin-bottom:9px;transition:border-color .12s,opacity .25s}
+.item:hover{border-color:var(--line2)}
+.item.done .icontent{opacity:.5;transition:opacity .25s}
+.item.done .ititle{text-decoration:line-through;text-decoration-color:var(--faint);color:var(--mut)}
+.check{width:20px;height:20px;border-radius:7px;border:1.5px solid var(--line2);background:transparent;position:relative;flex:none;margin-top:2px;transition:.15s;padding:0}
+.check:hover{border-color:var(--mut)}
+.check.on{background:var(--fixed);border-color:var(--fixed)}
+.check svg{position:absolute;inset:0;margin:auto;opacity:0;transform:scale(.3);transition:transform .2s cubic-bezier(.3,1.5,.5,1),opacity .15s}
+.check.on svg{opacity:1;transform:scale(1)}
+.icontent{flex:1;min-width:0}
+.i-r1{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.pdot{width:8px;height:8px;border-radius:50%;flex:none}
+.ititle{font-weight:600;font-size:13.5px}
+.tag{font-size:10.5px;color:var(--mut);border:1px solid var(--line2);border-radius:5px;padding:1px 7px}
+.prop{font-size:9.5px;color:var(--brand);border:1px solid var(--brand);border-radius:4px;padding:1px 5px;font-weight:600}
+.idesc{color:var(--mut);font-size:12.5px;margin:6px 0 0}
+.i-r3{display:flex;align-items:center;gap:7px;margin-top:10px;flex-wrap:wrap}
+.devpill{font-size:10px;font-weight:500;border-radius:999px;padding:3px 9px;border:1px solid}
+.devpill.Web{color:var(--dev-Web);border-color:color-mix(in srgb,var(--dev-Web) 45%,transparent)}
+.devpill.MWeb{color:var(--dev-MWeb);border-color:color-mix(in srgb,var(--dev-MWeb) 45%,transparent)}
+.devpill.Mobile{color:var(--dev-Mobile);border-color:color-mix(in srgb,var(--dev-Mobile) 45%,transparent)}
+.devpill.Tab{color:var(--dev-Tab);border-color:color-mix(in srgb,var(--dev-Tab) 45%,transparent)}
+.i-r3 .sp{flex:1}
+.statpill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);background:transparent;border-radius:8px;height:30px;padding:0 4px 0 10px;font-size:11.5px}
+.statpill .sd{width:7px;height:7px;border-radius:50%}
+.statpill select{background-color:transparent;border:0;color:var(--txt);font-size:11.5px;padding:0 22px 0 2px!important;background-position:right 2px center}
+.statpill select:focus{outline:none}
+.editb{border:1px solid var(--line2);background:transparent;color:var(--mut);border-radius:7px;padding:4px 9px;font-size:11px}
+.editb:hover{border-color:var(--primary);color:var(--txt)}
+.ictrl{display:flex;align-items:center;gap:7px;align-self:flex-start}
+.editb.icon{width:30px;height:30px;display:grid;place-items:center;padding:0;border-radius:8px}
+.i-r1 .devpill{margin-left:2px}
+.empty{padding:56px;text-align:center;color:var(--mut)}
+
+/* inline edit */
+.item.editing{position:relative;flex-direction:column;gap:12px;border:2px solid rgba(255,255,255,.14)}
+.ef-del{position:absolute;top:13px;right:14px;width:30px;height:30px;display:grid;place-items:center;border:1px solid var(--line2);background:transparent;color:var(--mut);border-radius:8px}
+.ef-del:hover{border-color:rgba(226,75,106,.6);color:var(--blocker)}
+.editform{display:flex;flex-direction:column;gap:12px;width:100%}
+.ef-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;border-radius:5px;padding:2px 8px;align-self:flex-start}
+.ef-label.new{background:var(--primary);color:var(--onprimary);font-weight:600}
+.ef-label.edit{background:var(--surface2);color:var(--mut);border:1px solid var(--line2)}
+.ef-title{background:transparent;border:1px solid transparent;border-radius:8px;color:var(--txt);padding:6px 9px;margin-left:-9px;font-size:15.5px;font-weight:600;width:min(480px,100%);transition:background .12s}
+.ef-title:hover{background:var(--surface2)}
+.ef-title:focus{background:var(--surface2);border-color:var(--line2)}
+.ef-title::placeholder{color:var(--faint);font-weight:600}
+.ef-desc{background:transparent;border:1px solid transparent;border-radius:8px;color:var(--mut);padding:6px 9px;margin-left:-9px;font-size:13px;min-height:30px;resize:vertical;font-family:inherit;width:min(620px,100%);transition:background .12s}
+.ef-desc:hover{background:var(--surface2)}
+.ef-desc:focus{background:var(--surface2);border-color:var(--line2);color:var(--txt)}
+.ef-desc::placeholder{color:var(--faint)}
+.ef-title:focus,.ef-desc:focus{outline:none}
+.ef-field select:focus{outline:2px solid var(--primary);border-color:var(--primary)}
+.ef-controls{display:flex;gap:24px;align-items:flex-end;flex-wrap:wrap}
+.ef-field.dev{margin-right:12px}
+.ef-field{display:flex;flex-direction:column;gap:6px}
+.ef-field .lab{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+.epills{display:flex;gap:7px;flex-wrap:wrap}
+.epill{border:1px solid var(--line2);background:var(--surface2);color:var(--mut);border-radius:999px;padding:5px 12px;font-size:12px}
+.epill[aria-pressed=true]{background:var(--txt);color:var(--bg);border-color:var(--txt)}
+.ef-field select{background-color:var(--surface2);border:1px solid var(--line2);border-radius:9px;color:var(--txt);padding:8px 34px 8px 11px;font-size:12.5px}
+.ef-acts{margin-left:auto;display:flex;gap:9px;align-items:center}
+.ghostbtn{border:1px solid var(--line2);background:var(--surface);border-radius:9px;padding:8px 14px;font-size:12.5px;color:var(--txt)}
+.dele{border:1px solid rgba(226,75,106,.5);background:transparent;color:var(--blocker);border-radius:9px;padding:8px 13px;font-size:12px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--txt);color:var(--bg);padding:9px 16px;border-radius:9px;font-weight:600;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:80}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.hide{display:none!important}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+@media(max-width:720px){.tabsbar{top:54px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<header class="top"><div class="wrap">
+  <div class="brand" id="brand"><span class="mk"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> QA Review</div>
+  <button class="back hide" id="back">← Dashboard</button>
+  <div class="crumb" id="crumb"></div>
+  <div class="topright">
+    <span class="syncbadge" id="syncbadge"><span class="syncdot"></span>Local only</span>
+    <button class="tbtn" id="expbtn">Export</button>
+    <button class="tbtn" id="impbtn">Import</button>
+    <button class="tbtn" id="rstbtn">Reset</button>
+    <input type="file" id="impfile" accept="application/json,.json" hidden>
+  </div>
+</div></header>
+<main id="app"></main>
+<div class="toast" id="toast"></div>
+<script>
+/* ============================================================
+   SHARED MODE — paste your Supabase project values below.
+   Leave as-is to run in local (this-browser-only) mode.
+   Get these in Supabase > Project Settings > API.
+   ============================================================ */
+const SUPABASE_URL = "https://saraugytiylehfatmkfp.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_wFDIAcEP9mfKMn006ujt8A_aOGPqu9X";
+/* ============================================================ */
+const SHARED = /^https:\/\/[a-z0-9-]+\.supabase\.co/i.test(SUPABASE_URL) && !/YOUR-/.test(SUPABASE_URL) && !!SUPABASE_ANON_KEY && !/YOUR-/.test(SUPABASE_ANON_KEY);
+const REST = SUPABASE_URL.replace(/\/+$/,"") + "/rest/v1/feedback";
+const HEAD = Object.assign({apikey:SUPABASE_ANON_KEY,"Content-Type":"application/json"}, /^eyJ/.test(SUPABASE_ANON_KEY)?{Authorization:"Bearer "+SUPABASE_ANON_KEY}:{});
+function toDB(i){return {id:i.id,flow:i.flow,area:i.area,title:i.title,description:i.desc,devices:i.devices,type:i.type,priority:i.priority,status:i.status,proposed:!!i.proposed};}
+function fromDB(r){return {id:r.id,flow:r.flow,area:r.area||"General",title:r.title,desc:r.description||"",devices:Array.isArray(r.devices)?r.devices:[],type:r.type,priority:r.priority,status:r.status,proposed:!!r.proposed};}
+async function dbAll(){const r=await fetch(REST+"?select=*&order=created_at.asc",{headers:HEAD});if(!r.ok)throw new Error(r.status);return r.json();}
+async function dbInsert(i){const r=await fetch(REST,{method:"POST",headers:{...HEAD,Prefer:"return=minimal"},body:JSON.stringify(toDB(i))});if(!r.ok)throw new Error(await r.text());}
+async function dbPatch(id,patch){const r=await fetch(REST+"?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{...HEAD,Prefer:"return=minimal"},body:JSON.stringify(patch)});if(!r.ok)throw new Error(await r.text());}
+async function dbDel(id){const r=await fetch(REST+"?id=eq."+encodeURIComponent(id),{method:"DELETE",headers:HEAD});if(!r.ok)throw new Error(await r.text());}
+function setSync(state){const el=document.getElementById("syncbadge");if(!el)return;const m={live:["Shared · live","var(--fixed)"],local:["Local only","var(--mut)"],err:["Sync error","var(--blocker)"],sync:["Syncing…","var(--mut)"]}[state]||["Local only","var(--mut)"];el.innerHTML='<span class="syncdot" style="background:'+m[1]+'"></span>'+m[0];el.style.color=m[1];}
+function syncErr(e){console.warn("sync:",e&&e.message||e);setSync("err");toast("Sync failed — will retry on refresh");}
+function persistInsert(i){if(SHARED)dbInsert(i).then(()=>setSync("live")).catch(syncErr);else save();}
+function persistPatch(id,patch){if(SHARED)dbPatch(id,patch).then(()=>setSync("live")).catch(syncErr);else save();}
+function persistDelete(id){if(SHARED)dbDel(id).then(()=>setSync("live")).catch(syncErr);else save();}
+let pollTimer=null;
+async function refresh(){if(!SHARED||editing)return;try{const rows=await dbAll();ITEMS=rows.map(fromDB);setSync("live");if(view.name==="flow")renderList();else renderDash();}catch(e){setSync("err");}}
+async function boot(){
+  if(SHARED){
+    setSync("sync");
+    try{const rows=await dbAll();ITEMS=rows.map(fromDB);setSync("live");
+      clearInterval(pollTimer);pollTimer=setInterval(refresh,20000);window.addEventListener("focus",refresh);
+    }catch(e){setSync("err");const s=load();if(s)ITEMS=s;}
+    ["impbtn","rstbtn"].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display="none";});
+  }else{const s=load();if(s)ITEMS=s;setSync("local");}
+  renderDash();
+}
+
+let ITEMS=[{"id": "H1", "flow": "Hairstylist", "area": "Splash & opening", "title": "Splash sequence order wrong", "desc": "Wheel should come first, then the text + thumbnails. Currently the text appears first, then the wheel — looks off. (Flagged across rounds.)", "devices": ["Web", "M-Web"], "type": "Motion", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H2", "flow": "Hairstylist", "area": "Splash & opening", "title": "Selector drops / jumps in from top", "desc": "The selector enters from the top, which looks off and differs from design. Fix the entry.", "devices": ["Web", "M-Web"], "type": "Motion", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H3", "flow": "Hairstylist", "area": "Splash & opening", "title": "Selector arrow design wrong", "desc": "The selector arrow icon itself doesn't match design. Replace to match.", "devices": ["Web"], "type": "DS", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H4", "flow": "Hairstylist", "area": "Splash & opening", "title": "Loading overlay unclipped (sharp corners)", "desc": "The black overlay in the splash loading state has zero radius / sharp corners. Clip it to match design.", "devices": ["Web", "M-Web"], "type": "Visual", "priority": "Medium", "status": "In progress", "proposed": false}, {"id": "H5", "flow": "Hairstylist", "area": "Splash & opening", "title": "Tick jerks / bounces on selection", "desc": "The tick animation jerks/bounces whenever a hairstyle is selected. Smooth it.", "devices": ["Web", "M-Web"], "type": "Motion", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H6", "flow": "Hairstylist", "area": "Splash & opening", "title": "Splash wheel background too light", "desc": "Background behind the rotating wheel is too light. Increase the background blur to match design.", "devices": ["Web"], "type": "Visual", "priority": "Low", "status": "Fixed", "proposed": false}, {"id": "H7", "flow": "Hairstylist", "area": "Splash & opening", "title": "Wheel rotation not fluid", "desc": "The last image exits and reappears from the other side abruptly rather than flowing. Smooth the loop.", "devices": ["Web"], "type": "Motion", "priority": "Medium", "status": "Fixed", "proposed": false}, {"id": "H8", "flow": "Hairstylist", "area": "Splash & opening", "title": "Lag on first splash frame", "desc": "There's a hitch on the very first frame of the splash. Fix the initial-frame lag.", "devices": ["Web"], "type": "Motion", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H9", "flow": "Hairstylist", "area": "Splash & opening", "title": "Splash animation missing", "desc": "No splash animation played on m-web. Investigate why it isn't firing.", "devices": ["M-Web"], "type": "Motion", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H10", "flow": "Hairstylist", "area": "Splash & opening", "title": "Sparkle circle wrong on frosted screen", "desc": "The circle around the sparkle on the frosted opening screen differs from design.", "devices": ["M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H11", "flow": "Hairstylist", "area": "Splash & opening", "title": "Sparkle icon too blurry", "desc": "The sparkle icon on the frosted screen is blurrier than design. Sharpen it.", "devices": ["M-Web"], "type": "DS", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H12", "flow": "Hairstylist", "area": "Splash & opening", "title": "Heart bubble blurry / pixelated", "desc": "The heart bubble that pops on the image is blurry/pixelated. Sharpen to match.", "devices": ["Web", "M-Web"], "type": "Visual", "priority": "Low", "status": "In progress", "proposed": false}, {"id": "H13", "flow": "Hairstylist", "area": "Splash & opening", "title": "Low-res photos in splash", "desc": "The splash photos are low resolution (likely test assets — confirm final assets are high-res).", "devices": ["Web"], "type": "Asset", "priority": "Low", "status": "Fixed", "proposed": false}, {"id": "H14", "flow": "Hairstylist", "area": "Names & text", "title": "Per-letter name styling reverted / missing", "desc": "The per-letter name styling updated in design is back in dev on web / not implemented on m-web. Apply the design.", "devices": ["Web", "M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H15", "flow": "Hairstylist", "area": "Names & text", "title": "Hairstyle name letters clipped", "desc": "Letters in the hairstyle name are getting clipped. Fix the clipping.", "devices": ["Web", "M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H16", "flow": "Hairstylist", "area": "Names & text", "title": "Extra text on last hairstyle name (curly)", "desc": "Stray/extra text appears on the curly (last) hairstyle name. Check and remove it.", "devices": ["Web", "M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H17", "flow": "Hairstylist", "area": "Preview, generation & upload", "title": "Base image alignment & aspect ratio", "desc": "Base image is top-aligned and smaller; center it like Edit and match the aspect ratio exactly.", "devices": ["Web"], "type": "Visual", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H18", "flow": "Hairstylist", "area": "Preview, generation & upload", "title": "Base image downscales too late", "desc": "Downscale happens too late, so a harsh black/white flash shows as the image enters the creating zone. Time it earlier.", "devices": ["Web"], "type": "Motion", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H19", "flow": "Hairstylist", "area": "Preview, generation & upload", "title": "20% black overlay missing on upload", "desc": "After uploading an image, the 20% black overlay is missing. Add it.", "devices": ["M-Web"], "type": "Visual", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H20", "flow": "Hairstylist", "area": "Preview, generation & upload", "title": "Generation transition unnatural", "desc": "On generating a new image the current preview should slide right and the new one emerge; currently abrupt. Add the transition.", "devices": ["M-Web"], "type": "Motion", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H21", "flow": "Hairstylist", "area": "Preview, generation & upload", "title": "Generations not working", "desc": "Generations weren't happening at all in the first pass. (Confirm if resolved after later fixes.)", "devices": ["Web"], "type": "Functional", "priority": "Blocker", "status": "Fixed", "proposed": false}, {"id": "H22", "flow": "Hairstylist", "area": "Preview, generation & upload", "title": "Preview blur doesn't clear", "desc": "The 'your hairstyles will appear here' blur persists instead of fading after a few seconds. Fix so it clears.", "devices": ["Web"], "type": "Functional", "priority": "High", "status": "Open", "proposed": false}, {"id": "H23", "flow": "Hairstylist", "area": "Preview, generation & upload", "title": "Results carousel / image missing", "desc": "Carousel image is missing and there's no scroll indicator showing all generated images. Show the image + scrollable carousel.", "devices": ["M-Web"], "type": "Functional", "priority": "High", "status": "Open", "proposed": false}, {"id": "H24", "flow": "Hairstylist", "area": "Preview, generation & upload", "title": "Can't scroll between photos", "desc": "Scrolling to the other photo isn't working on mobile. Fix the photo scroll/swipe.", "devices": ["M-Web"], "type": "Functional", "priority": "Blocker", "status": "Open", "proposed": false}, {"id": "H25", "flow": "Hairstylist", "area": "Preview, generation & upload", "title": "Export / share icon missing on images", "desc": "No export icon on images, so there's no way to share a picture on m-web. Add the export/share action.", "devices": ["M-Web"], "type": "Functional", "priority": "Blocker", "status": "Open", "proposed": false}, {"id": "H26", "flow": "Hairstylist", "area": "Preview, generation & upload", "title": "White post-it artifact in thumbnail preview", "desc": "An unnatural white 'post-it' appears in the thumbnail preview while images get created. Remove it.", "devices": ["M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H27", "flow": "Hairstylist", "area": "Preview, generation & upload", "title": "'Creating' tag needed from top", "desc": "Add a 'Creating' tag from the top so the user knows an image is still generating after they exit.", "devices": ["M-Web"], "type": "Functional", "priority": "High", "status": "Open", "proposed": false}, {"id": "H28", "flow": "Hairstylist", "area": "Preview, generation & upload", "title": "Upload 'creating' state wrong + no touch target", "desc": "While an uploaded image generates, the upload/style state is wrong and the icon is too tiny to tap. Fix the state and enlarge the tap target.", "devices": ["M-Web"], "type": "DS", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H29", "flow": "Hairstylist", "area": "Preview, generation & upload", "title": "Upload icon / control off-design", "desc": "Upload icon differs from design & stroke is clipped (m-web); missing hover state & off-design (web). Verify and fix.", "devices": ["Web", "M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H30", "flow": "Hairstylist", "area": "Filters & bottom sheets", "title": "Drop middle filter-scroll state", "desc": "With three filters, show only the right chevron at the start and the left chevron at the end — no in-between state.", "devices": ["Web", "M-Web"], "type": "State", "priority": "High", "status": "Open", "proposed": false}, {"id": "H31", "flow": "Hairstylist", "area": "Filters & bottom sheets", "title": "Filter side-scroll clips instead of blur", "desc": "On side-scroll the edge should layer-blur; currently the other side gets clipped out.", "devices": ["Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H32", "flow": "Hairstylist", "area": "Filters & bottom sheets", "title": "Filters look blurry", "desc": "The filters render very blurry on m-web. Fix so they're crisp.", "devices": ["M-Web"], "type": "Visual", "priority": "Low", "status": "In progress", "proposed": false}, {"id": "H33", "flow": "Hairstylist", "area": "Filters & bottom sheets", "title": "Hair-color icon wrong", "desc": "The hair-color icon stroke doesn't match design. Swap to the correct icon.", "devices": ["Web"], "type": "DS", "priority": "Medium", "status": "Fixed", "proposed": false}, {"id": "H34", "flow": "Hairstylist", "area": "Filters & bottom sheets", "title": "Missing scroll state in filter / adjust sheets", "desc": "Scroll state missing in the hair color / length / type sheets (and Adjust). Add it and match DS.", "devices": ["Web", "M-Web"], "type": "State", "priority": "High", "status": "Open", "proposed": false}, {"id": "H35", "flow": "Hairstylist", "area": "Filters & bottom sheets", "title": "Filter-sheet selection state wrong", "desc": "The selection state for the image-selection components doesn't match the DS. Correct it.", "devices": ["Web", "M-Web"], "type": "State", "priority": "High", "status": "Open", "proposed": false}, {"id": "H36", "flow": "Hairstylist", "area": "Filters & bottom sheets", "title": "Applied option not pre-selected on reopen", "desc": "Reopening a filter should show the previously applied option as selected.", "devices": ["Web", "M-Web"], "type": "State", "priority": "High", "status": "Open", "proposed": true}, {"id": "H37", "flow": "Hairstylist", "area": "Filters & bottom sheets", "title": "Hair type duplicated entries", "desc": "'Original' / 'baby' appear twice; dedupe so the tick sits on a single option.", "devices": ["M-Web"], "type": "Functional", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H38", "flow": "Hairstylist", "area": "Filters & bottom sheets", "title": "Remove CTA / text-wrapper shadow on small sheets", "desc": "Drop the wrapper shadow on limited-option sheets (hair type / options / headland).", "devices": ["Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H39", "flow": "Hairstylist", "area": "Filters & bottom sheets", "title": "Headland sheet layout wrong", "desc": "The headland bottom-sheet layout/arrangement is off. Match design.", "devices": ["Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H40", "flow": "Hairstylist", "area": "Filters & bottom sheets", "title": "CTA wrapper shadow should clip at sheet end", "desc": "In the hair color sheet, clip the CTA shadow at the scroll end and restore it on scroll back.", "devices": ["Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H41", "flow": "Hairstylist", "area": "Filters & bottom sheets", "title": "Hair color sheet not at 90% height", "desc": "The sheet should open to 90% of the screen; it currently doesn't.", "devices": ["Web"], "type": "Visual", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H42", "flow": "Hairstylist", "area": "Filters & bottom sheets", "title": "CTA wrapper spacing wrong (hair color)", "desc": "Extra space on the CTA wrapper in the hair color sheet; should be 16px.", "devices": ["M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H43", "flow": "Hairstylist", "area": "Filters & bottom sheets", "title": "Cross-icon hover & size wrong", "desc": "In the filter sheets, the cross-icon hover state and sizing are off. Fix both.", "devices": ["Web"], "type": "DS", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H44", "flow": "Hairstylist", "area": "Asset tiles & carousel", "title": "Missing hover border on asset tiles", "desc": "Hovering a Hairstylist asset tile should show a black border; it's missing.", "devices": ["Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H45", "flow": "Hairstylist", "area": "Asset tiles & carousel", "title": "Missing hover scale on carousel thumbnails", "desc": "Hovering a previous-generation thumbnail should scale it up slightly (as in Edit); missing.", "devices": ["Web"], "type": "Motion", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H46", "flow": "Hairstylist", "area": "Layout & spacing", "title": "Left-panel heading spacing", "desc": "Spacing between left-panel assets is off (heading reads as the one below). Set 16px horizontally.", "devices": ["Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H47", "flow": "Hairstylist", "area": "Layout & spacing", "title": "Reduce heading size to 22px", "desc": "Heading is currently 26px; reduce it to 22px.", "devices": ["Web"], "type": "Visual", "priority": "Low", "status": "Fixed", "proposed": false}, {"id": "H48", "flow": "Hairstylist", "area": "Layout & spacing", "title": "End-of-list padding / name cut off", "desc": "At the list end, the name-shadow clips the last name. Add ~16–24px padding.", "devices": ["Web", "M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H49", "flow": "Hairstylist", "area": "Layout & spacing", "title": "Landing banner lines & spacing", "desc": "Both banner lines should run to the screen edges; the divider widths/padding are wrong.", "devices": ["M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H50", "flow": "Hairstylist", "area": "Layout & spacing", "title": "Landing heading missing (no-selection)", "desc": "The 'Choose a hairstyle to begin with' heading disappeared in the no-selection state. It should show.", "devices": ["M-Web"], "type": "State", "priority": "High", "status": "Open", "proposed": false}, {"id": "H51", "flow": "Hairstylist", "area": "Layout & spacing", "title": "Drop 'choose a hairstyle' line after upload", "desc": "After a hairstyle is uploaded, the 'choose a hairstyle to get started' line still shows. Remove it in that state.", "devices": ["M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H52", "flow": "Hairstylist", "area": "Layout & spacing", "title": "Header clipping + white bg & shadow", "desc": "Header has clipping plus a white background + drop shadow not in design. Remove them; no clipping.", "devices": ["M-Web"], "type": "Visual", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H53", "flow": "Hairstylist", "area": "Layout & spacing", "title": "Unnecessary shadow around preview images", "desc": "Remove the unnecessary shadow in the preview-images area.", "devices": ["M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H54", "flow": "Hairstylist", "area": "Layout & spacing", "title": "No gap between carousel, image & assets", "desc": "They sit together with no spacing and look off. Add gaps between them.", "devices": ["M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H55", "flow": "Hairstylist", "area": "Layout & spacing", "title": "Layout cramped on larger screens", "desc": "On iPhone Plus-size screens the preview should be bigger and thumbnails centered; currently cramped at the top.", "devices": ["M-Web"], "type": "Visual", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H56", "flow": "Hairstylist", "area": "Layout & spacing", "title": "Hard margin should be 12px", "desc": "Margin should be 12px from the top/left/right; currently more than 12.", "devices": ["M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H57", "flow": "Hairstylist", "area": "Toasts", "title": "Add toast on filter applied", "desc": "Show a confirming toast when a filter is applied (e.g. 'Hair color applied') so the user gets feedback.", "devices": ["Web"], "type": "Functional", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H58", "flow": "Hairstylist", "area": "Toasts", "title": "Toast position wrong", "desc": "Toast should rise from the bottom with ~30–40px padding; currently sits right below the image.", "devices": ["Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H59", "flow": "Hairstylist", "area": "Toasts", "title": "Celebratory toast should be info toast", "desc": "Toast shows a check / celebratory style; since it's not a celebration, use a plain info toast.", "devices": ["Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "H60", "flow": "Hairstylist", "area": "Toasts", "title": "Toast width wrong (end-to-end)", "desc": "Toast width is off / cramped; the widget should span end-to-end, not hug its content.", "devices": ["M-Web"], "type": "Visual", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "H61", "flow": "Hairstylist", "area": "Toasts", "title": "'Added to gallery' toast trigger wrong", "desc": "The 'Added to gallery' toast should appear on hover, like the other toasts.", "devices": ["M-Web"], "type": "Functional", "priority": "High", "status": "Open", "proposed": false}, {"id": "H62", "flow": "Hairstylist", "area": "Toasts", "title": "'Keep Original' filter label wrong", "desc": "When 'Keep Original' is selected, the filter still reads 'Hair Color'; it should read 'Original'.", "devices": ["M-Web"], "type": "Functional", "priority": "High", "status": "Open", "proposed": false}, {"id": "H63", "flow": "Hairstylist", "area": "Save to gallery", "title": "Save-to-gallery animation broken + wrong motion path", "desc": "Animation still isn't working; it should scale the image down then move it into the wallet (currently plays within the wallet).", "devices": ["Web", "M-Web"], "type": "Motion", "priority": "Medium", "status": "In progress", "proposed": false}, {"id": "H64", "flow": "Hairstylist", "area": "Save to gallery", "title": "Save-to-gallery wallet design off & pixelated", "desc": "The wallet/envelope design isn't proper and is pixelated. Match the original design.", "devices": ["Web", "M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "P65", "flow": "Photoshoot with Credits", "area": "General", "title": "Add friends-and-family CTA", "desc": "Consider adding the friends-and-family CTA (the one on the landing) to this flow too.", "devices": ["Web"], "type": "Functional", "priority": "Low", "status": "Open", "proposed": true}, {"id": "P66", "flow": "Photoshoot with Credits", "area": "General", "title": "Photo morph: previous image over-enlarges", "desc": "During the morph the previous photo enlarges too much and pixels drop out as the new one comes in. Add a blur, then swap the image.", "devices": ["Web"], "type": "Motion", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "P67", "flow": "Photoshoot with Credits", "area": "General", "title": "Jerky scale-down on type change", "desc": "Selecting a type (e.g. Casual) makes the first image scale down and change at the same moment, which looks jerky. Smooth the transition.", "devices": ["Web"], "type": "Motion", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "P68", "flow": "Photoshoot with Credits", "area": "General", "title": "'Best value' icon should be filled", "desc": "The 'best value' icon is filled in design but a stroke icon in dev. Update to the filled version.", "devices": ["Web", "M-Web"], "type": "DS", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "P69", "flow": "Photoshoot with Credits", "area": "General", "title": "'What can I do with credits?' modal morph", "desc": "Opening the modal animates its width in a stretchy, gluey way before settling. Fix the motion.", "devices": ["Web"], "type": "Motion", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "P70", "flow": "Photoshoot with Credits", "area": "General", "title": "Carousel image corner radius", "desc": "The image carousel has a corner radius inside it that looks weird. Consider removing it so images just slide.", "devices": ["M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "P71", "flow": "Photoshoot with Credits", "area": "General", "title": "Remove scroll state on selector", "desc": "There's a scroll state on the selector that shouldn't be there. Remove it.", "devices": ["M-Web"], "type": "State", "priority": "High", "status": "Open", "proposed": false}, {"id": "P72", "flow": "Photoshoot with Credits", "area": "General", "title": "Buy Credits sheet scroll behavior broken", "desc": "On the Buy Credits sheet, scrolling should send the title to the top; it isn't happening. Fix the scroll behavior.", "devices": ["M-Web"], "type": "Functional", "priority": "High", "status": "Open", "proposed": false}, {"id": "P73", "flow": "Photoshoot with Credits", "area": "General", "title": "Remove hover state on mobile", "desc": "'What can I do more with credits' has a hover state on mobile that shouldn't exist. Remove it.", "devices": ["M-Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "R74", "flow": "Referral", "area": "General", "title": "Referral entry banner gradient", "desc": "The gradient on the referral-entry banner (photoshoot & gallery pages) looks off. Review it.", "devices": ["Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "R75", "flow": "Referral", "area": "General", "title": "Checkboxes should appear on hover only", "desc": "Selection ticks show on every headshot at once. The checkbox should appear only on hover.", "devices": ["Web"], "type": "Functional", "priority": "High", "status": "Open", "proposed": false}, {"id": "R76", "flow": "Referral", "area": "General", "title": "Missing CTA container shadow", "desc": "The CTA container inside the modal is missing its container shadow.", "devices": ["Web"], "type": "Visual", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "R77", "flow": "Referral", "area": "General", "title": "Phone field & Continue button off-spec", "desc": "Phone field corner radius too small; Continue button sizing differs from other buttons. Verify vs DS.", "devices": ["Web"], "type": "DS", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "R78", "flow": "Referral", "area": "General", "title": "Missing FAQ section", "desc": "The web header had an FAQ section that isn't present in dev. Add it back per design.", "devices": ["Web"], "type": "Functional", "priority": "High", "status": "Open", "proposed": false}, {"id": "R79", "flow": "Referral", "area": "General", "title": "Toggle should switch on before opening", "desc": "Clicking the toggle jumps straight to opening the sheet. It should turn on first, then open.", "devices": ["Web", "M-Web"], "type": "Functional", "priority": "High", "status": "Open", "proposed": false}, {"id": "R80", "flow": "Referral", "area": "General", "title": "Divider: linear vs solid", "desc": "Design uses a linear divider; dev renders it solid. Match design.", "devices": ["Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "R81", "flow": "Referral", "area": "General", "title": "Logo on white background", "desc": "White background behind the logo looks off; swap in a transparent asset.", "devices": ["Web"], "type": "Asset", "priority": "Low", "status": "Open", "proposed": false}, {"id": "R82", "flow": "Referral", "area": "General", "title": "Outdated OG image", "desc": "OG image is the old one, not Magic Studio's. Replace with the new OG image.", "devices": ["Web"], "type": "Asset", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "R83", "flow": "Referral", "area": "General", "title": "Discount pills too blurry", "desc": "The discount pills have an overly blurry effect. Re-verify vs design.", "devices": ["Web"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "R84", "flow": "Referral", "area": "General", "title": "Missing redeemed-ticket shake/tilt", "desc": "Clicking a redeemed ticket should shake it from centre to a tilted position — currently missing.", "devices": ["Web", "Mobile"], "type": "Motion", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "R85", "flow": "Referral", "area": "General", "title": "Envelope-open / ticket reveal refine", "desc": "The envelope-opening + ticket-emerging animation still isn't as envisioned. Refine for delight.", "devices": ["Web", "Mobile"], "type": "Motion", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "R86", "flow": "Referral", "area": "General", "title": "Refer-and-earn banner mismatch", "desc": "The refer-and-earn banner differs from design. Verify illustration proportions + gradient.", "devices": ["Mobile"], "type": "Visual", "priority": "Medium", "status": "Open", "proposed": false}, {"id": "R87", "flow": "Referral", "area": "General", "title": "Rating divider colour", "desc": "By the 5-star rating, dev shows a gray divider; design uses green. Match design.", "devices": ["Mobile"], "type": "Visual", "priority": "Low", "status": "Open", "proposed": false}, {"id": "R88", "flow": "Referral", "area": "General", "title": "Toast & modal timing overlap", "desc": "Toast and modal-open fire together. Modal should open first; toast after the user passes it.", "devices": ["M-Web"], "type": "Functional", "priority": "High", "status": "Open", "proposed": false}]; const DATES={"Hairstylist": "23 Oct 2026", "Photoshoot with Credits": "21 Oct 2026", "Referral": "18 Oct 2026"}; const BLURBS={"Hairstylist": "Upload a photo, pick a hairstyle plus hair colour, length and type, and generate try-on looks to save to the gallery.", "Photoshoot with Credits": "Choose a look and spend credits to generate an AI headshot photoshoot.", "Referral": "Refer-and-earn \u2014 invite friends, open the envelope, and unlock reward tickets and discounts."};
+const SEED=JSON.parse(JSON.stringify(ITEMS));
+const STORE_KEY="qa_board_v1";
+function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(ITEMS));}catch(e){}}
+function load(){try{const r=localStorage.getItem(STORE_KEY);if(r){const d=JSON.parse(r);if(Array.isArray(d)&&d.length)return d;}}catch(e){}return null;}
+(function(){const s=load();if(s)ITEMS=s;})();
+function exportJSON(){try{const blob=new Blob([JSON.stringify(ITEMS,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="qa-board.json";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href);toast("Exported qa-board.json");}catch(e){toast("Export failed");}}
+function importJSON(file){const fr=new FileReader();fr.onload=()=>{try{const d=JSON.parse(fr.result);if(Array.isArray(d)&&d.length){ITEMS=d;save();toast("Imported "+d.length+" items");view.name==="flow"&&ITEMS.some(i=>i.flow===view.flow)?renderFlow():renderDash();}else toast("File has no items");}catch(e){toast("Not valid JSON");}};fr.readAsText(file);}
+function resetSeed(){if(confirm("Reset the board to the original seeded data? Changes saved in this browser will be lost.")){ITEMS=JSON.parse(JSON.stringify(SEED));save();renderDash();toast("Reset to seed");}}
+const DEVICES=["Web","M-Web","Mobile","Tab"];
+const TYPES=["Visual","Motion","State","DS","Functional","Asset"];
+const PRIOS=["Blocker","High","Medium","Low"];
+const PRANK={Blocker:0,High:1,Medium:2,Low:3};
+const STATUSES=["Open","In progress","Fixed","Won't fix"];
+const DONE=new Set(["Fixed","Won't fix"]);
+const TNOTE={Blocker:"fix before ship",High:"pick these first",Medium:"then these — mostly independent",Low:"polish / parallel"};
+const CHECK=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
+const nd=d=>d.replace("-","");
+const TODAY=new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
+let view={name:"dash"};
+let F={tab:"active",dev:"All",types:new Set(),group:"priority",q:"",panel:false,search:false};
+let editing=null; // id | "__new__" | null
+const $=s=>document.querySelector(s);
+const esc=s=>(s||"").replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1200);}
+
+function flowList(){const m={};ITEMS.forEach(i=>{(m[i.flow]=m[i.flow]||[]).push(i)});
+  return Object.keys(m).sort().map(name=>{const its=m[name];return {name,total:its.length,
+    open:its.filter(i=>!DONE.has(i.status)).length,fixed:its.filter(i=>i.status==="Fixed").length,
+    blk:its.filter(i=>i.priority==="Blocker"&&!DONE.has(i.status)).length,
+    devs:[...new Set(its.flatMap(i=>i.devices))],date:DATES[name]||TODAY};});}
+function ring(p){const r=16,c=2*Math.PI*r,o=c*(1-p/100);
+  return `<svg class="ring" viewBox="0 0 40 40"><circle cx="20" cy="20" r="${r}" fill="none" stroke="var(--line)" stroke-width="3"/>
+  <circle cx="20" cy="20" r="${r}" fill="none" stroke="var(--fixed)" stroke-width="3" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${o}" transform="rotate(-90 20 20)"/>
+  <text class="pct" x="20" y="23" text-anchor="middle">${p}%</text></svg>`;}
+
+function setChrome(){
+  if(view.name==="dash"){$("#brand").classList.remove("hide");$("#back").classList.add("hide");$("#crumb").innerHTML="";}
+  else{$("#brand").classList.add("hide");$("#back").classList.remove("hide");$("#crumb").innerHTML=`<b>${esc(view.flow)}</b>`;}
+}
+function renderDash(){
+  view={name:"dash"};setChrome();
+  const fs=flowList();
+  $("#app").innerHTML=`<div class="hero"><div class="wrap">
+    <h1>Feedback board</h1>
+    <p class="lede">Pick a flow. Inside, every observation is split by device, typed, and ordered by what to fix first — so a developer can scan and pick work off the board.</p>
+  </div></div>
+  <div class="wrap"><div class="secrow"><h2>Flows</h2><span class="meta">${fs.length} flows · ${fs.reduce((a,f)=>a+f.open,0)} open</span></div>
+  <div class="cards">${fs.map(f=>{const p=f.total?Math.round(f.fixed/f.total*100):0;
+    return `<div class="card" data-flow="${esc(f.name)}" tabindex="0" role="button">${ring(p)}
+    <h3>${esc(f.name)}</h3>
+    <div class="devpills">${f.devs.map(d=>`<span class="dpill">${esc(d)}</span>`).join("")}</div>
+    <div class="bignums"><div><div class="n">${f.open}</div><div class="l">open</div></div><div class="blk"><div class="n">${f.blk}</div><div class="l">blockers</div></div></div>
+    <div class="cardfoot"><span class="carddate">Updated ${esc(f.date)}</span><span class="goarrow">→</span></div></div>`;}).join("")}<div class="card newflow" id="newflowcard" tabindex="0" role="button"><div class="nf-plus">+</div><div class="nf-label">New flow</div><div class="nf-sub">Start testing a new flow</div></div></div></div>`;
+  document.querySelectorAll(".card[data-flow]").forEach(c=>{const go=()=>openFlow(c.dataset.flow);
+    c.addEventListener("click",go);c.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});});
+  const nf=document.getElementById("newflowcard");
+  if(nf){const open=()=>enterNewFlow(nf);nf.addEventListener("click",open);nf.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open();}});}
+}
+function enterNewFlow(card){
+  if(card.classList.contains("editing"))return;
+  card.classList.add("editing");
+  card.innerHTML=`<div class="nf-plus">+</div><input class="nf-input" placeholder="Flow name\u2026" maxlength="60"><div class="nf-acts"><button class="addbtn nf-create">Create</button><button class="ghostbtn nf-cancel">Cancel</button></div>`;
+  const inp=card.querySelector(".nf-input");inp.focus();
+  const go=()=>{const n=inp.value.trim();if(!n){inp.focus();return;}openFlow(n,true);};
+  card.querySelector(".nf-create").addEventListener("click",e=>{e.stopPropagation();go();});
+  card.querySelector(".nf-cancel").addEventListener("click",e=>{e.stopPropagation();renderDash();});
+  inp.addEventListener("click",e=>e.stopPropagation());
+  inp.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Enter")go();if(e.key==="Escape")renderDash();});
+}
+function openFlow(n,startAdd){view={name:"flow",flow:n};F={tab:"active",dev:"All",types:new Set(),group:"priority",q:"",panel:false,search:false};editing=startAdd?"__new__":null;renderFlow();window.scrollTo(0,0);if(startAdd){const el=document.querySelector(".item.editing .ef-title");if(el)el.focus();}}
+function flowItems(){return ITEMS.filter(i=>i.flow===view.flow);}
+function baseFiltered(){return flowItems().filter(i=>{
+  if(F.dev!=="All"&&!i.devices.includes(F.dev))return false;
+  if(F.types.size&&!F.types.has(i.type))return false;
+  if(F.q){const h=(i.title+" "+i.desc+" "+i.area+" "+i.type).toLowerCase();if(!h.includes(F.q.toLowerCase()))return false;}
+  return true;});}
+function renderFlow(){
+  setChrome();
+  const devs=["All",...new Set(flowItems().flatMap(i=>i.devices))];
+  $("#app").innerHTML=`<div class="fhead"><div class="wrap">
+    <div class="t"><h1>${esc(view.flow)}</h1><span class="cdate">Updated ${esc(DATES[view.flow]||TODAY)}</span></div>
+    <p class="fsub">${esc(BLURBS[view.flow]|| (flowItems().length? "" : "New flow \u2014 add your first finding below."))}</p></div></div>
+  <div class="tabsbar"><div class="wrap"><div class="tabs" id="tabs">
+    <button class="tab" data-v="all">All <span class="cnt" id="c-all">0</span></button>
+    <button class="tab" data-v="active">Active <span class="cnt" id="c-active">0</span></button>
+    <button class="tab" data-v="done">Resolved <span class="cnt" id="c-done">0</span></button></div></div></div>
+  <div class="wrap">
+    <div class="ctrls">
+      <div class="pills" id="devpills">${devs.map(d=>`<button class="pill" data-v="${d}" aria-pressed="${d==='All'}">${d}</button>`).join("")}</div>
+      <div class="rightctl">
+        <div class="searchbox" id="sbox"><input id="q" type="search" placeholder="Search…" autocomplete="off"></div>
+        <button class="iconbtn" id="searchbtn" aria-label="Search" aria-pressed="false"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
+        <button class="filterbtn" id="filterbtn" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18M6 12h12M10 19h4"/></svg> Filters <span class="badge hide" id="fbadge">0</span></button>
+        <button class="addbtn" id="addbtn">+ Add</button>
+      </div>
+    </div>
+    <div class="fpanel" id="fpanel">
+      <div class="fgroup"><span class="lab">Group by</span><div class="seg" id="groupseg"><button data-v="priority" aria-pressed="true">Priority</button><button data-v="area" aria-pressed="false">Section</button></div></div>
+      <div class="fgroup"><span class="lab">Error type</span><div class="opts" id="typeopts">${TYPES.map(t=>`<button class="tchip" data-v="${t}" aria-pressed="false">${t}</button>`).join("")}</div></div>
+    </div>
+    <div class="board" id="list"></div>
+  </div>`;
+  wire();renderList();
+}
+function setseg(box,v){box.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",(b.dataset.v===v).toString()));}
+function wire(){
+  $("#tabs").querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{F.tab=b.dataset.v;renderList();}));
+  $("#devpills").querySelectorAll(".pill").forEach(b=>b.addEventListener("click",()=>{F.dev=b.dataset.v;setseg($("#devpills"),b.dataset.v);renderList();}));
+  $("#groupseg").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{F.group=b.dataset.v;setseg($("#groupseg"),b.dataset.v);renderList();}));
+  $("#typeopts").querySelectorAll(".tchip").forEach(b=>b.addEventListener("click",()=>{const v=b.dataset.v,on=b.getAttribute("aria-pressed")==="true";b.setAttribute("aria-pressed",(!on).toString());on?F.types.delete(v):F.types.add(v);const n=F.types.size,bb=$("#fbadge");bb.textContent=n;bb.classList.toggle("hide",!n);renderList();}));
+  $("#filterbtn").addEventListener("click",()=>{F.panel=!F.panel;$("#fpanel").classList.toggle("on",F.panel);$("#filterbtn").setAttribute("aria-pressed",F.panel);});
+  $("#searchbtn").addEventListener("click",()=>{F.search=!F.search;$("#sbox").classList.toggle("open",F.search);$("#searchbtn").setAttribute("aria-pressed",F.search);if(F.search)$("#q").focus();else{F.q="";$("#q").value="";renderList();}});
+  $("#q").addEventListener("input",e=>{F.q=e.target.value;renderList();});
+  $("#addbtn").addEventListener("click",()=>{editing="__new__";renderList();const el=$(".item.editing .ef-title");if(el){el.scrollIntoView({block:"center"});el.focus();}});
+}
+function counts(base){$("#c-active").textContent=base.filter(i=>!DONE.has(i.status)).length;$("#c-done").textContent=base.filter(i=>DONE.has(i.status)).length;$("#c-all").textContent=base.length;}
+function renderList(){
+  const base=baseFiltered();counts(base);
+  $("#tabs").querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",(b.dataset.v===F.tab).toString()));
+  let rows=base;
+  if(F.tab==="active")rows=base.filter(i=>!DONE.has(i.status));
+  else if(F.tab==="done")rows=base.filter(i=>DONE.has(i.status));
+  const host=$("#list");
+  let head = editing==="__new__" ? editForm({title:"",desc:"",devices:["Web"],type:"Visual",priority:"Medium",status:"Open"},"__new__") : "";
+  if(!rows.length&&!head){host.innerHTML=`<div class="empty">Nothing here with these filters.</div>`;return;}
+  let groups;
+  if(F.group==="priority")groups=PRIOS.map(p=>({k:p,note:TNOTE[p],col:`var(--${p.toLowerCase()})`,items:rows.filter(i=>i.priority===p)})).filter(g=>g.items.length);
+  else groups=[...new Set(rows.map(i=>i.area))].map(a=>({k:a,note:"",col:"var(--primary)",items:rows.filter(i=>i.area===a).sort((x,y)=>PRANK[x.priority]-PRANK[y.priority])}));
+  host.innerHTML=head+groups.map(g=>`<div class="tier"><div class="tierhead"><span class="td" style="background:${g.col}"></span>
+    <h4>${esc(g.k)}</h4><span class="ct">${g.items.length}</span>${g.note?`<span class="note">· ${g.note}</span>`:""}<span class="rule"></span></div>
+    ${g.items.map(i=>i.id===editing?editForm(i,i.id):itemHTML(i)).join("")}</div>`).join("");
+  wireList();
+}
+function itemHTML(i){
+  const done=DONE.has(i.status);
+  const sd={Open:"var(--open)","In progress":"var(--prog)",Fixed:"var(--fixed)","Won't fix":"var(--wont)"}[i.status];
+  const PEN='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+  return `<div class="item ${done?'done':''}" data-id="${i.id}">
+    <button class="check ${i.status==='Fixed'?'on':''}" data-check="${i.id}" aria-label="Resolve">${CHECK}</button>
+    <div class="icontent">
+      <div class="i-r1"><span class="pdot" style="background:var(--${i.priority.toLowerCase()})"></span>
+        <span class="ititle">${esc(i.title)}</span><span class="tag">${i.priority}</span><span class="tag">${i.type}</span>${i.proposed?'<span class="prop">PROPOSED</span>':''}
+        ${i.devices.map(d=>`<span class="devpill ${nd(d)}">${esc(d)}</span>`).join("")}</div>
+      <div class="idesc">${esc(i.desc)}</div>
+    </div>
+    <div class="ictrl">
+      <span class="statpill"><span class="sd" style="background:${sd}"></span><select data-st="${i.id}">${STATUSES.map(s=>`<option ${s===i.status?'selected':''}>${s}</option>`).join("")}</select></span>
+      <button class="editb icon" data-edit="${i.id}" aria-label="Edit">${PEN}</button>
+    </div></div>`;
+}
+function editForm(i,id){
+  return `<div class="item editing" data-editing="${id}">
+    <div class="editform">
+      ${id!=="__new__"?`<button class="ef-del" aria-label="Delete"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V6\"/><path d=\"M10 11v6M14 11v6\"/></svg></button>`:""}
+      <span class="ef-label ${id==='__new__'?'new':'edit'}">${id==='__new__'?'New':'Editing'}</span>
+      <input class="ef-title" placeholder="Issue title" value="${esc(i.title)}">
+      <textarea class="ef-desc" placeholder="Add a description — what's wrong + expected">${esc(i.desc)}</textarea>
+      <div class="ef-controls">
+        <div class="ef-field dev"><span class="lab">Devices</span>
+          <div class="epills">${DEVICES.map(d=>`<button class="epill" data-d="${d}" aria-pressed="${i.devices.includes(d)}">${d}</button>`).join("")}</div></div>
+        <div class="ef-field"><span class="lab">Type</span><select class="ef-type">${TYPES.map(t=>`<option ${t===i.type?'selected':''}>${t}</option>`).join("")}</select></div>
+        <div class="ef-field"><span class="lab">Priority</span><select class="ef-prio">${PRIOS.map(p=>`<option ${p===i.priority?'selected':''}>${p}</option>`).join("")}</select></div>
+        <div class="ef-field"><span class="lab">Status</span><select class="ef-status">${STATUSES.map(s=>`<option ${s===i.status?'selected':''}>${s}</option>`).join("")}</select></div>
+        <div class="ef-acts"><button class="addbtn savee">Save</button><button class="ghostbtn cancele">Cancel</button></div>
+      </div>
+    </div></div>`;
+}
+function wireList(){
+  const host=$("#list");
+  host.querySelectorAll("[data-check]").forEach(b=>b.addEventListener("click",()=>{
+    const i=ITEMS.find(x=>x.id===b.dataset.check);const card=b.closest(".item");
+    i.status=i.status==="Fixed"?"Open":"Fixed";
+    const fixed=i.status==="Fixed";
+    b.classList.toggle("on",fixed);card.classList.toggle("done",DONE.has(i.status));
+    const sel=card.querySelector("[data-st]");if(sel)sel.value=i.status;
+    const sd=card.querySelector(".statpill .sd");if(sd)sd.style.background=fixed?"var(--fixed)":"var(--open)";
+    persistPatch(i.id,{status:i.status});counts(baseFiltered());
+  }));
+  host.querySelectorAll("[data-st]").forEach(s=>s.addEventListener("change",e=>{const id=e.target.dataset.st;const it=ITEMS.find(x=>x.id===id);it.status=e.target.value;persistPatch(id,{status:it.status});renderList();}));
+  host.querySelectorAll("[data-edit]").forEach(b=>b.addEventListener("click",()=>{editing=b.dataset.edit;renderList();const el=$(".item.editing .ef-title");if(el){el.focus();el.scrollIntoView({block:"center"});}}));
+  host.querySelectorAll(".epill").forEach(b=>b.addEventListener("click",()=>b.setAttribute("aria-pressed",(b.getAttribute("aria-pressed")!=="true").toString())));
+  const ec=host.querySelector(".item.editing");
+  if(ec){
+    ec.querySelector(".savee").addEventListener("click",()=>saveEdit(ec));
+    ec.querySelector(".cancele").addEventListener("click",()=>{editing=null;renderList();});
+    const del=ec.querySelector(".ef-del");if(del)del.addEventListener("click",()=>{const id=editing;ITEMS=ITEMS.filter(x=>x.id!==id);persistDelete(id);editing=null;toast("Deleted");renderList();});
+  }
+}
+function saveEdit(card){
+  const id=card.dataset.editing;
+  const title=card.querySelector(".ef-title").value.trim();if(!title){toast("Add a title");return;}
+  const devices=[...card.querySelectorAll(".epill")].filter(p=>p.getAttribute("aria-pressed")==="true").map(p=>p.dataset.d);
+  if(!devices.length){toast("Pick a device");return;}
+  const p={title,desc:card.querySelector(".ef-desc").value.trim(),devices,type:card.querySelector(".ef-type").value,priority:card.querySelector(".ef-prio").value,status:card.querySelector(".ef-status").value};
+  if(id==="__new__"){const ni={id:"N"+Date.now().toString(36),flow:view.flow,area:"General",proposed:false,...p};ITEMS.unshift(ni);persistInsert(ni);toast("Added");}
+  else{const it=ITEMS.find(x=>x.id===id);Object.assign(it,p);persistPatch(id,toDB(it));toast("Saved");}
+  editing=null;renderList();
+}
+document.addEventListener("DOMContentLoaded",()=>{
+  $("#back").addEventListener("click",()=>{renderDash();window.scrollTo(0,0);});
+  $("#brand").addEventListener("click",()=>{renderDash();window.scrollTo(0,0);});
+  $("#expbtn").addEventListener("click",exportJSON);
+  $("#impbtn").addEventListener("click",()=>$("#impfile").click());
+  $("#impfile").addEventListener("change",e=>{if(e.target.files&&e.target.files[0])importJSON(e.target.files[0]);e.target.value="";});
+  $("#rstbtn").addEventListener("click",resetSeed);
+  boot();
+});
+</script>
+</body></html>
