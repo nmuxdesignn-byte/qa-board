@@ -76,7 +76,11 @@ button.metapill{cursor:pointer}
 .metapill.ghost{color:var(--mut);border:1px dashed var(--line2);background:transparent}
 .metapill.ghost:hover{border-color:var(--primary);color:var(--txt)}
 .efmedia{display:flex;flex-direction:column;gap:9px}
-.upbtn{align-self:flex-start;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line2);background:#F4F4F4;color:var(--mut);border-radius:9px;padding:8px 12px;font-size:12.5px;font-family:inherit;cursor:pointer}
+.upbtn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line2);background:#F4F4F4;color:var(--mut);border-radius:9px;padding:8px 12px;font-size:12.5px;font-family:inherit;cursor:pointer}
+.efup{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.drophint{font-size:12px;color:var(--faint)}
+.item.editing.dragging{border-color:var(--primary);background:#FAFAFA}
+.item.editing.dragging .drophint{color:var(--txt)}
 .upbtn:hover{border-color:var(--primary);color:var(--txt)}
 .efthumbs{display:flex;flex-wrap:wrap;gap:8px}
 .efthumb{position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;border:1px solid var(--line);display:inline-block;background:#F2F2F2}
@@ -475,7 +479,7 @@ function editForm(i,id){
       <span class="ef-label ${id==='__new__'?'new':'edit'}">${id==='__new__'?'New':'Editing'}</span>
       <input class="ef-title" placeholder="Issue title" value="${esc(i.title)}">
       <textarea class="ef-desc" placeholder="Add a description — what's wrong + expected">${esc(i.desc)}</textarea>
-      <div class="efmedia"><button type="button" class="upbtn" id="efUpload"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M12 3v13M7 8l5-5 5 5"/></svg>Upload image</button><input type="file" id="efFile" accept="image/*" multiple hidden><div class="efthumbs" id="efThumbs"></div></div>
+      <div class="efmedia"><div class="efup"><button type="button" class="upbtn" id="efUpload"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M12 3v13M7 8l5-5 5 5"/></svg>Upload image</button><span class="drophint">or drag &amp; drop</span></div><input type="file" id="efFile" accept="image/*" multiple hidden><div class="efthumbs" id="efThumbs"></div></div>
       <div class="ef-controls">
         <div class="ef-field dev"><span class="lab">Devices</span>
           <div class="epills">${DEVICES.map(d=>`<button class="epill" data-d="${d}" aria-pressed="${i.devices.includes(d)}">${d}</button>`).join("")}</div></div>
@@ -508,6 +512,11 @@ function wireList(){
     const del=ec.querySelector(".ef-del");if(del)del.addEventListener("click",()=>{const id=editing;ITEMS=ITEMS.filter(x=>x.id!==id);persistDelete(id);editing=null;toast("Deleted");renderList();});
     const up=ec.querySelector("#efUpload"),fi=ec.querySelector("#efFile");
     if(up&&fi){up.addEventListener("click",()=>fi.click());fi.addEventListener("change",e=>{if(e.target.files&&e.target.files.length)addFiles([...e.target.files]);e.target.value="";});}
+    let dragc=0;
+    ec.addEventListener("dragenter",e=>{e.preventDefault();dragc++;ec.classList.add("dragging");});
+    ec.addEventListener("dragover",e=>{e.preventDefault();});
+    ec.addEventListener("dragleave",e=>{e.preventDefault();dragc--;if(dragc<=0){dragc=0;ec.classList.remove("dragging");}});
+    ec.addEventListener("drop",e=>{e.preventDefault();dragc=0;ec.classList.remove("dragging");const files=[...((e.dataTransfer&&e.dataTransfer.files)||[])].filter(f=>f.type&&f.type.startsWith("image/"));if(files.length)addFiles(files);});
     renderEfThumbs();
   }
 }
