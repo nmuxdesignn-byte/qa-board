@@ -47,7 +47,8 @@ h1{font-family:var(--font-disp);font-weight:600;letter-spacing:-.02em;font-size:
 .ring{position:absolute;top:16px;right:16px;width:40px;height:40px}
 .ring .pct{font-family:'JetBrains Mono',monospace;font-size:10px;fill:var(--mut)}
 .card h3{font-family:var(--font-disp);font-size:20px;font-weight:600;margin:0 0 10px;letter-spacing:-.01em;max-width:80%}
-.devpills{display:flex;gap:6px;margin-bottom:auto}
+.devpills{display:flex;gap:6px;flex-wrap:wrap}
+.cardtop{margin-bottom:auto;display:flex;flex-direction:column;gap:8px}
 .dpill{font-size:11px;font-weight:500;border:1px solid var(--line2);border-radius:999px;padding:3px 10px;color:var(--mut)}
 .bignums{display:flex;gap:26px;margin:18px 0 14px}
 .bignums .n{font-family:var(--font-disp);font-weight:600;font-size:28px;line-height:1}
@@ -68,6 +69,19 @@ h1{font-family:var(--font-disp);font-weight:600;letter-spacing:-.02em;font-size:
 .nf-input{background:var(--surface2);border:1px solid var(--line2);border-radius:9px;color:var(--txt);padding:9px 12px;font-size:14px;font-weight:600;width:min(220px,82%);text-align:center}
 .nf-input:focus{outline:2px solid var(--primary);border-color:var(--primary)}
 .nf-acts{display:flex;gap:10px;justify-content:center}
+.metarow{display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center}
+.metapill{display:inline-flex;align-items:center;font-size:11px;border-radius:999px;padding:3px 10px;border:1px solid;font-weight:500;white-space:nowrap}
+.metapill.designer{color:#5aa9e6;border-color:rgba(90,169,230,.45);background:rgba(90,169,230,.09)}
+.metapill.developer{color:#c48be6;border-color:rgba(196,139,230,.45);background:rgba(196,139,230,.09)}
+.scrim{position:fixed;inset:0;background:rgba(4,4,6,.66);backdrop-filter:blur(3px);z-index:70;display:none;align-items:center;justify-content:center;padding:20px}
+.scrim.on{display:flex}
+.modal{background:var(--surface);border:1px solid var(--line2);border-radius:16px;width:min(440px,100%);box-shadow:0 24px 70px rgba(0,0,0,.6)}
+.modal h3{font-family:var(--font-disp);font-size:16px;margin:0;padding:18px 20px;border-bottom:1px solid var(--line);font-weight:600}
+.mbody{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.field label{display:block;font-size:10.5px;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin-bottom:5px}
+.field input{width:100%;background:var(--surface2);border:1px solid var(--line2);border-radius:9px;color:var(--txt);padding:9px 11px;font-size:13px;font-family:inherit}
+.field input:focus{outline:2px solid var(--primary);border-color:var(--primary)}
+.mfoot{display:flex;padding:16px 20px;border-top:1px solid var(--line)}
 .card:hover .goarrow{background:var(--primary);border-color:var(--primary);color:var(--onprimary);transform:translateX(2px)}
 
 .fhead{padding:30px 0 4px}
@@ -208,6 +222,15 @@ h1{font-family:var(--font-disp);font-weight:600;letter-spacing:-.02em;font-size:
   </div>
 </div></header>
 <main id="app"></main>
+<div class="scrim" id="nfScrim"><div class="modal">
+  <h3>New flow</h3>
+  <div class="mbody">
+    <div class="field"><label>Flow name</label><input id="nf_name" placeholder="e.g. Checkout" maxlength="60"></div>
+    <div class="field"><label>Designer</label><input id="nf_designer" placeholder="Designer name" maxlength="40"></div>
+    <div class="field"><label>Developer</label><input id="nf_dev" placeholder="Developer name" maxlength="40"></div>
+  </div>
+  <div class="mfoot"><div style="margin-left:auto;display:flex;gap:10px"><button class="ghostbtn" id="nf_cancel">Cancel</button><button class="addbtn" id="nf_create">Create flow</button></div></div>
+</div></div>
 <div class="toast" id="toast"></div>
 <script>
 /* ============================================================
@@ -221,8 +244,8 @@ const SUPABASE_ANON_KEY = "sb_publishable_wFDIAcEP9mfKMn006ujt8A_aOGPqu9X";
 const SHARED = /^https:\/\/[a-z0-9-]+\.supabase\.co/i.test(SUPABASE_URL) && !/YOUR-/.test(SUPABASE_URL) && !!SUPABASE_ANON_KEY && !/YOUR-/.test(SUPABASE_ANON_KEY);
 const REST = SUPABASE_URL.replace(/\/+$/,"") + "/rest/v1/feedback";
 const HEAD = Object.assign({apikey:SUPABASE_ANON_KEY,"Content-Type":"application/json"}, /^eyJ/.test(SUPABASE_ANON_KEY)?{Authorization:"Bearer "+SUPABASE_ANON_KEY}:{});
-function toDB(i){return {id:i.id,flow:i.flow,area:i.area,title:i.title,description:i.desc,devices:i.devices,type:i.type,priority:i.priority,status:i.status,proposed:!!i.proposed};}
-function fromDB(r){return {id:r.id,flow:r.flow,area:r.area||"General",title:r.title,desc:r.description||"",devices:Array.isArray(r.devices)?r.devices:[],type:r.type,priority:r.priority,status:r.status,proposed:!!r.proposed};}
+function toDB(i){return {id:i.id,flow:i.flow,area:i.area,title:i.title,description:i.desc,devices:i.devices,type:i.type,priority:i.priority,status:i.status,proposed:!!i.proposed,designer:i.designer||"",developer:i.developer||""};}
+function fromDB(r){return {id:r.id,flow:r.flow,area:r.area||"General",title:r.title,desc:r.description||"",devices:Array.isArray(r.devices)?r.devices:[],type:r.type,priority:r.priority,status:r.status,proposed:!!r.proposed,designer:r.designer||"",developer:r.developer||""};}
 async function dbAll(){const r=await fetch(REST+"?select=*&order=created_at.asc",{headers:HEAD});if(!r.ok)throw new Error(r.status);return r.json();}
 async function dbInsert(i){const r=await fetch(REST,{method:"POST",headers:{...HEAD,Prefer:"return=minimal"},body:JSON.stringify(toDB(i))});if(!r.ok)throw new Error(await r.text());}
 async function dbPatch(id,patch){const r=await fetch(REST+"?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{...HEAD,Prefer:"return=minimal"},body:JSON.stringify(patch)});if(!r.ok)throw new Error(await r.text());}
@@ -271,11 +294,15 @@ const $=s=>document.querySelector(s);
 const esc=s=>(s||"").replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1200);}
 
+let pendingFlow=null;
+function flowMeta(flow){const it=ITEMS.find(i=>i.flow===flow&&(i.designer||i.developer));return {designer:it?it.designer:"",developer:it?it.developer:""};}
+function currentFlowMeta(){return (pendingFlow&&pendingFlow.flow===view.flow)?{designer:pendingFlow.designer,developer:pendingFlow.developer}:flowMeta(view.flow);}
+function metaPills(m){let h="";if(m.designer)h+=`<span class="metapill designer" title="Designer">Design \u00b7 ${esc(m.designer)}</span>`;if(m.developer)h+=`<span class="metapill developer" title="Developer">Dev \u00b7 ${esc(m.developer)}</span>`;return h?`<span class="metarow">${h}</span>`:"";}
 function flowList(){const m={};ITEMS.forEach(i=>{(m[i.flow]=m[i.flow]||[]).push(i)});
   return Object.keys(m).sort().map(name=>{const its=m[name];return {name,total:its.length,
     open:its.filter(i=>!DONE.has(i.status)).length,fixed:its.filter(i=>i.status==="Fixed").length,
     blk:its.filter(i=>i.priority==="Blocker"&&!DONE.has(i.status)).length,
-    devs:[...new Set(its.flatMap(i=>i.devices))],date:DATES[name]||TODAY};});}
+    devs:[...new Set(its.flatMap(i=>i.devices))],date:DATES[name]||TODAY,designer:(its.find(i=>i.designer)||{}).designer||"",developer:(its.find(i=>i.developer)||{}).developer||""};});}
 function ring(p){const r=16,c=2*Math.PI*r,o=c*(1-p/100);
   return `<svg class="ring" viewBox="0 0 40 40"><circle cx="20" cy="20" r="${r}" fill="none" stroke="var(--line)" stroke-width="3"/>
   <circle cx="20" cy="20" r="${r}" fill="none" stroke="var(--fixed)" stroke-width="3" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${o}" transform="rotate(-90 20 20)"/>
@@ -296,25 +323,17 @@ function renderDash(){
   <div class="cards">${fs.map(f=>{const p=f.total?Math.round(f.fixed/f.total*100):0;
     return `<div class="card" data-flow="${esc(f.name)}" tabindex="0" role="button">${ring(p)}
     <h3>${esc(f.name)}</h3>
-    <div class="devpills">${f.devs.map(d=>`<span class="dpill">${esc(d)}</span>`).join("")}</div>
+    <div class="cardtop"><div class="devpills">${f.devs.map(d=>`<span class="dpill">${esc(d)}</span>`).join("")}</div>${metaPills({designer:f.designer,developer:f.developer})}</div>
     <div class="bignums"><div><div class="n">${f.open}</div><div class="l">open</div></div><div class="blk"><div class="n">${f.blk}</div><div class="l">blockers</div></div></div>
     <div class="cardfoot"><span class="carddate">Updated ${esc(f.date)}</span><span class="goarrow">→</span></div></div>`;}).join("")}<div class="card newflow" id="newflowcard" tabindex="0" role="button"><div class="nf-plus">+</div><div class="nf-label">New flow</div><div class="nf-sub">Start testing a new flow</div></div></div></div>`;
   document.querySelectorAll(".card[data-flow]").forEach(c=>{const go=()=>openFlow(c.dataset.flow);
     c.addEventListener("click",go);c.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});});
   const nf=document.getElementById("newflowcard");
-  if(nf){const open=()=>enterNewFlow(nf);nf.addEventListener("click",open);nf.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open();}});}
+  if(nf){const open=()=>openNewFlowModal();nf.addEventListener("click",open);nf.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open();}});}
 }
-function enterNewFlow(card){
-  if(card.classList.contains("editing"))return;
-  card.classList.add("editing");
-  card.innerHTML=`<div class="nf-plus">+</div><input class="nf-input" placeholder="Flow name\u2026" maxlength="60"><div class="nf-acts"><button class="addbtn nf-create">Create</button><button class="ghostbtn nf-cancel">Cancel</button></div>`;
-  const inp=card.querySelector(".nf-input");inp.focus();
-  const go=()=>{const n=inp.value.trim();if(!n){inp.focus();return;}openFlow(n,true);};
-  card.querySelector(".nf-create").addEventListener("click",e=>{e.stopPropagation();go();});
-  card.querySelector(".nf-cancel").addEventListener("click",e=>{e.stopPropagation();renderDash();});
-  inp.addEventListener("click",e=>e.stopPropagation());
-  inp.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Enter")go();if(e.key==="Escape")renderDash();});
-}
+function openNewFlowModal(){const sc=document.getElementById("nfScrim");["nf_name","nf_designer","nf_dev"].forEach(id=>document.getElementById(id).value="");sc.classList.add("on");document.getElementById("nf_name").focus();}
+function closeNewFlowModal(){document.getElementById("nfScrim").classList.remove("on");}
+function createFlow(){const name=document.getElementById("nf_name").value.trim();if(!name){document.getElementById("nf_name").focus();return;}pendingFlow={flow:name,designer:document.getElementById("nf_designer").value.trim(),developer:document.getElementById("nf_dev").value.trim()};closeNewFlowModal();openFlow(name,true);}
 function openFlow(n,startAdd){view={name:"flow",flow:n};F={tab:"active",dev:"All",types:new Set(),group:"priority",q:"",panel:false,search:false};editing=startAdd?"__new__":null;renderFlow();window.scrollTo(0,0);if(startAdd){const el=document.querySelector(".item.editing .ef-title");if(el)el.focus();}}
 function flowItems(){return ITEMS.filter(i=>i.flow===view.flow);}
 function baseFiltered(){return flowItems().filter(i=>{
@@ -326,7 +345,7 @@ function renderFlow(){
   setChrome();
   const devs=["All",...new Set(flowItems().flatMap(i=>i.devices))];
   $("#app").innerHTML=`<div class="fhead"><div class="wrap">
-    <div class="t"><h1>${esc(view.flow)}</h1><span class="cdate">Updated ${esc(DATES[view.flow]||TODAY)}</span></div>
+    <div class="t"><h1>${esc(view.flow)}</h1><span class="cdate">Updated ${esc(DATES[view.flow]||TODAY)}</span>${metaPills(currentFlowMeta())}</div>
     <p class="fsub">${esc(BLURBS[view.flow]|| (flowItems().length? "" : "New flow \u2014 add your first finding below."))}</p></div></div>
   <div class="tabsbar"><div class="wrap"><div class="tabs" id="tabs">
     <button class="tab" data-v="all">All <span class="cnt" id="c-all">0</span></button>
@@ -440,7 +459,7 @@ function saveEdit(card){
   const devices=[...card.querySelectorAll(".epill")].filter(p=>p.getAttribute("aria-pressed")==="true").map(p=>p.dataset.d);
   if(!devices.length){toast("Pick a device");return;}
   const p={title,desc:card.querySelector(".ef-desc").value.trim(),devices,type:card.querySelector(".ef-type").value,priority:card.querySelector(".ef-prio").value,status:card.querySelector(".ef-status").value};
-  if(id==="__new__"){const ni={id:"N"+Date.now().toString(36),flow:view.flow,area:"General",proposed:false,...p};ITEMS.unshift(ni);persistInsert(ni);toast("Added");}
+  if(id==="__new__"){const meta=(pendingFlow&&pendingFlow.flow===view.flow)?pendingFlow:flowMeta(view.flow);const ni={id:"N"+Date.now().toString(36),flow:view.flow,area:"General",proposed:false,designer:meta.designer||"",developer:meta.developer||"",...p};ITEMS.unshift(ni);persistInsert(ni);if(pendingFlow&&pendingFlow.flow===view.flow)pendingFlow=null;toast("Added");}
   else{const it=ITEMS.find(x=>x.id===id);Object.assign(it,p);persistPatch(id,toDB(it));toast("Saved");}
   editing=null;renderList();
 }
@@ -451,6 +470,10 @@ document.addEventListener("DOMContentLoaded",()=>{
   $("#impbtn").addEventListener("click",()=>$("#impfile").click());
   $("#impfile").addEventListener("change",e=>{if(e.target.files&&e.target.files[0])importJSON(e.target.files[0]);e.target.value="";});
   $("#rstbtn").addEventListener("click",resetSeed);
+  $("#nf_create").addEventListener("click",createFlow);
+  $("#nf_cancel").addEventListener("click",closeNewFlowModal);
+  $("#nfScrim").addEventListener("click",e=>{if(e.target===$("#nfScrim"))closeNewFlowModal();});
+  ["nf_name","nf_designer","nf_dev"].forEach(id=>$("#"+id).addEventListener("keydown",e=>{if(e.key==="Enter")createFlow();if(e.key==="Escape")closeNewFlowModal();}));
   boot();
 });
 </script>
