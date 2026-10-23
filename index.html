@@ -57,7 +57,7 @@ h1{font-family:var(--font-disp);font-weight:600;letter-spacing:-.02em;font-size:
 .bignums .blk .n{color:var(--blocker)}
 .cardfoot{display:flex;align-items:center;justify-content:space-between}
 .cdate{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint)}
-.carddate{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--mut);border:1px solid var(--line2);border-radius:999px;padding:3px 10px}
+.carddate{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--mut);border:1px solid var(--line2);border-radius:999px;padding:6px 11px}
 .goarrow{width:34px;height:34px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;font-size:16px;color:var(--mut);transition:.15s}
 .card.newflow{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;border-style:dashed;border-color:var(--line2);background:transparent}
 .card.newflow:hover{border-color:var(--primary);transform:translateY(-2px)}
@@ -71,7 +71,7 @@ h1{font-family:var(--font-disp);font-weight:600;letter-spacing:-.02em;font-size:
 .nf-input:focus{outline:2px solid var(--primary);border-color:var(--primary)}
 .nf-acts{display:flex;gap:10px;justify-content:center}
 .metarow{display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center}
-.metapill{display:inline-flex;align-items:center;font-size:10.5px;border-radius:999px;padding:3px 10px;border:1px solid;font-weight:500;white-space:nowrap;font-family:inherit}
+.metapill{display:inline-flex;align-items:center;font-size:11px;border-radius:999px;padding:6px 12px;border:1px solid;font-weight:500;white-space:nowrap;font-family:inherit}
 button.metapill{cursor:pointer}
 .metapill.ghost{color:var(--mut);border:1px dashed var(--line2);background:transparent}
 .metapill.ghost:hover{border-color:var(--primary);color:var(--txt)}
@@ -80,7 +80,9 @@ button.metapill{cursor:pointer}
 .efup{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .efzone{position:relative;border:1px dashed var(--line2);border-radius:12px;padding:12px;transition:border-color .12s,background .12s}
 .efzone.dragging{border-color:var(--primary);background:#FAFAFA}
-.efzone-head{display:flex;justify-content:flex-end;margin-bottom:8px}
+.efrow{display:flex;align-items:flex-start;gap:10px}
+.efrow .efthumbs{flex:1}
+.efrow .zoneup{margin-left:auto;flex:none}
 .zoneup{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);background:#fff;color:var(--txt);border-radius:8px;height:30px;padding:0 11px;font-size:12px;font-family:inherit;cursor:pointer}
 .zoneup:hover{border-color:var(--primary)}
 .efempty{display:flex;flex-direction:column;align-items:center;gap:7px;width:100%;background:transparent;border:0;cursor:pointer;padding:18px 0;font-family:inherit}
@@ -307,7 +309,7 @@ async function uploadImage(file){const safe=file.name.replace(/[^a-zA-Z0-9._-]/g
 async function deleteImage(path){if(!path)return;try{await fetch(SUPABASE_URL+"/storage/v1/object/"+BUCKET+"/"+encodeURIComponent(path),{method:"DELETE",headers:storageHead()});}catch(e){}}
 function toDataURL(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(file);});}
 async function addFiles(files){for(const file of files){if(!file.type||!file.type.startsWith("image/")){toast("Images only");continue;}if(file.size>6*1024*1024){toast("Image too large (max 6MB)");continue;}const ph={loading:true};editImages.push(ph);renderEfThumbs();try{let img;if(SHARED)img=await uploadImage(file);else img={url:await toDataURL(file)};Object.assign(ph,img,{loading:false});}catch(e){editImages=editImages.filter(x=>x!==ph);toast("Upload failed");console.warn(e&&e.message||e);}renderEfThumbs();}}
-function renderEfThumbs(){const w=document.getElementById("efThumbs");if(!w)return;const has=editImages.length>0;const emp=document.getElementById("efEmpty");if(emp)emp.style.display=has?"none":"flex";const side=document.getElementById("efSide");if(side)side.classList.toggle("hide",!has);w.innerHTML=editImages.map((im,ix)=>im.loading?'<span class="efthumb loading"></span>':`<span class="efthumb"><img src="${im.url}" data-full="${im.url}"><button type="button" class="efx" data-rmimg="${ix}" aria-label="Remove">\u00d7</button></span>`).join("");w.querySelectorAll("[data-rmimg]").forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();const ix=+b.dataset.rmimg;const im=editImages[ix];if(im&&im.path&&SHARED)deleteImage(im.path);editImages.splice(ix,1);renderEfThumbs();}));w.querySelectorAll("img[data-full]").forEach(im=>im.addEventListener("click",()=>openLightbox(im.dataset.full)));}
+function renderEfThumbs(){const w=document.getElementById("efThumbs");if(!w)return;const has=editImages.length>0;const emp=document.getElementById("efEmpty");if(emp)emp.style.display=has?"none":"flex";const row=document.getElementById("efRow");if(row)row.classList.toggle("hide",!has);w.innerHTML=editImages.map((im,ix)=>im.loading?'<span class="efthumb loading"></span>':`<span class="efthumb"><img src="${im.url}" data-full="${im.url}"><button type="button" class="efx" data-rmimg="${ix}" aria-label="Remove">\u00d7</button></span>`).join("");w.querySelectorAll("[data-rmimg]").forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();const ix=+b.dataset.rmimg;const im=editImages[ix];if(im&&im.path&&SHARED)deleteImage(im.path);editImages.splice(ix,1);renderEfThumbs();}));w.querySelectorAll("img[data-full]").forEach(im=>im.addEventListener("click",()=>openLightbox(im.dataset.full)));}
 function openLightbox(url){const lb=document.getElementById("lightbox");document.getElementById("lbimg").src=url;lb.classList.add("on");}
 function closeLightbox(){const lb=document.getElementById("lightbox");lb.classList.remove("on");document.getElementById("lbimg").src="";}
 async function dbAll(){const r=await fetch(REST+"?select=*&order=created_at.asc",{headers:HEAD});if(!r.ok)throw new Error(r.status);return r.json();}
@@ -496,7 +498,7 @@ function editForm(i,id){
       <span class="ef-label ${id==='__new__'?'new':'edit'}">${id==='__new__'?'New':'Editing'}</span>
       <input class="ef-title" placeholder="Issue title" value="${esc(i.title)}">
       <textarea class="ef-desc" placeholder="Add a description — what's wrong + expected">${esc(i.desc)}</textarea>
-      <div class="efzone" id="efZone"><div class="efzone-head hide" id="efSide"><button type="button" class="zoneup" data-upload><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Upload</button></div><div class="efthumbs" id="efThumbs"></div><button type="button" class="efempty" id="efEmpty" data-upload><span class="efcircle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span><span class="eftext">Upload</span><span class="efhint">or drag &amp; drop images here</span></button><input type="file" id="efFile" accept="image/*" multiple hidden></div>
+      <div class="efzone" id="efZone"><button type="button" class="efempty" id="efEmpty" data-upload><span class="efcircle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span><span class="eftext">Upload</span><span class="efhint">or drag &amp; drop images here</span></button><div class="efrow hide" id="efRow"><div class="efthumbs" id="efThumbs"></div><button type="button" class="zoneup" data-upload><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Upload</button></div><input type="file" id="efFile" accept="image/*" multiple hidden></div>
       <div class="ef-controls">
         <div class="ef-field dev"><span class="lab">Devices</span>
           <div class="epills">${DEVICES.map(d=>`<button class="epill" data-d="${d}" aria-pressed="${i.devices.includes(d)}">${d}</button>`).join("")}</div></div>
