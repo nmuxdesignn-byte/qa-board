@@ -57,7 +57,7 @@ h1{font-family:var(--font-disp);font-weight:600;letter-spacing:-.02em;font-size:
 .bignums .blk .n{color:var(--blocker)}
 .cardfoot{display:flex;align-items:center;justify-content:space-between}
 .cdate{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint)}
-.carddate{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--mut);border:1px solid var(--line2);border-radius:999px;padding:6px 11px}
+.carddate{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--mut);border:1px solid var(--line2);border-radius:999px;height:28px;display:inline-flex;align-items:center;padding:0 12px}
 .goarrow{width:34px;height:34px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;font-size:16px;color:var(--mut);transition:.15s}
 .card.newflow{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;border-style:dashed;border-color:var(--line2);background:transparent}
 .card.newflow:hover{border-color:var(--primary);transform:translateY(-2px)}
@@ -71,7 +71,7 @@ h1{font-family:var(--font-disp);font-weight:600;letter-spacing:-.02em;font-size:
 .nf-input:focus{outline:2px solid var(--primary);border-color:var(--primary)}
 .nf-acts{display:flex;gap:10px;justify-content:center}
 .metarow{display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center}
-.metapill{display:inline-flex;align-items:center;font-size:11px;border-radius:999px;padding:6px 12px;border:1px solid;font-weight:500;white-space:nowrap;font-family:inherit}
+.metapill{display:inline-flex;align-items:center;font-size:11px;border-radius:999px;height:28px;padding:0 12px;border:1px solid;font-weight:500;white-space:nowrap;font-family:inherit}
 button.metapill{cursor:pointer}
 .metapill.ghost{color:var(--mut);border:1px dashed var(--line2);background:transparent}
 .metapill.ghost:hover{border-color:var(--primary);color:var(--txt)}
@@ -526,6 +526,7 @@ function wireList(){
   host.querySelectorAll("[data-edit]").forEach(b=>b.addEventListener("click",()=>{editing=b.dataset.edit;editImages=(((ITEMS.find(x=>x.id===editing)||{}).images)||[]).slice();renderList();const el=$(".item.editing .ef-title");if(el){el.focus();el.scrollIntoView({block:"center"});}}));
   host.querySelectorAll(".epill").forEach(b=>b.addEventListener("click",()=>b.setAttribute("aria-pressed",(b.getAttribute("aria-pressed")!=="true").toString())));
   host.querySelectorAll(".ithumb[data-full]").forEach(im=>im.addEventListener("click",()=>openLightbox(im.dataset.full)));
+  host.querySelectorAll(".item[data-id]").forEach(it=>it.addEventListener("dblclick",e=>{if(e.target.closest("button,select,input,textarea,a,.ithumb"))return;const id=it.dataset.id;editing=id;editImages=(((ITEMS.find(x=>x.id===id)||{}).images)||[]).slice();renderList();const el=$(".item.editing .ef-title");if(el)el.focus();}));
   const ec=host.querySelector(".item.editing");
   if(ec){
     ec.querySelector(".savee").addEventListener("click",()=>saveEdit(ec));
