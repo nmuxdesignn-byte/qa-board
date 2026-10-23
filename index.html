@@ -498,7 +498,7 @@ function editForm(i,id){
       <span class="ef-label ${id==='__new__'?'new':'edit'}">${id==='__new__'?'New':'Editing'}</span>
       <input class="ef-title" placeholder="Issue title" value="${esc(i.title)}">
       <textarea class="ef-desc" placeholder="Add a description — what's wrong + expected">${esc(i.desc)}</textarea>
-      <div class="efzone" id="efZone"><button type="button" class="efempty" id="efEmpty" data-upload><span class="efcircle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span><span class="eftext">Upload</span><span class="efhint">or drag &amp; drop images here</span></button><div class="efrow hide" id="efRow"><div class="efthumbs" id="efThumbs"></div><button type="button" class="zoneup" data-upload><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Upload</button></div><input type="file" id="efFile" accept="image/*" multiple hidden></div>
+      <div class="efzone" id="efZone"><button type="button" class="efempty" id="efEmpty" data-upload><span class="efcircle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span><span class="eftext">Upload</span><span class="efhint">drag, drop, or paste an image</span></button><div class="efrow hide" id="efRow"><div class="efthumbs" id="efThumbs"></div><button type="button" class="zoneup" data-upload><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Upload</button></div><input type="file" id="efFile" accept="image/*" multiple hidden></div>
       <div class="ef-controls">
         <div class="ef-field dev"><span class="lab">Devices</span>
           <div class="epills">${DEVICES.map(d=>`<button class="epill" data-d="${d}" aria-pressed="${i.devices.includes(d)}">${d}</button>`).join("")}</div></div>
@@ -539,6 +539,7 @@ function wireList(){
     ec.addEventListener("dragover",e=>{e.preventDefault();});
     ec.addEventListener("dragleave",e=>{e.preventDefault();dragc--;if(dragc<=0){dragc=0;if(zone)zone.classList.remove("dragging");}});
     ec.addEventListener("drop",e=>{e.preventDefault();dragc=0;if(zone)zone.classList.remove("dragging");const files=[...((e.dataTransfer&&e.dataTransfer.files)||[])].filter(f=>f.type&&f.type.startsWith("image/"));if(files.length)addFiles(files);});
+    ec.addEventListener("paste",e=>{const its=(e.clipboardData&&e.clipboardData.items)||[];const files=[];for(const it of its){if(it.kind==="file"&&it.type&&it.type.startsWith("image/")){const f=it.getAsFile();if(f)files.push(f);}}if(files.length){e.preventDefault();addFiles(files);}});
     renderEfThumbs();
   }
 }
