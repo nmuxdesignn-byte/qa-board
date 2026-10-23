@@ -572,7 +572,15 @@ document.addEventListener("DOMContentLoaded",()=>{
   ["meta_designer","meta_dev"].forEach(id=>$("#"+id).addEventListener("keydown",e=>{if(e.key==="Enter")saveFlowMeta();if(e.key==="Escape")closeMetaModal();}));
   $("#lbclose").addEventListener("click",closeLightbox);
   $("#lightbox").addEventListener("click",e=>{if(e.target.id==="lightbox")closeLightbox();});
-  document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLightbox();});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(document.getElementById("lightbox").classList.contains("on")){closeLightbox();}else if(editing){editing=null;renderList();}}});
+  document.addEventListener("click",e=>{
+    if(!editing)return;
+    if(e.target.closest("#addbtn,[data-edit]"))return;
+    if(document.getElementById("lightbox").classList.contains("on"))return;
+    const ec=document.querySelector(".item.editing");
+    if(!ec||ec.contains(e.target))return;
+    editing=null;renderList();
+  });
   boot();
 });
 </script>
