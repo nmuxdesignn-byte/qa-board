@@ -234,6 +234,7 @@ button.metapill{cursor:pointer}
 .tchev{margin-left:auto;display:inline-flex;color:var(--txt);transition:transform .15s}
 .tchev.col{transform:rotate(-90deg)}
 .tier-body{padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+.flatlist{display:flex;flex-direction:column;gap:10px;padding-top:2px}
 .tier-body .item{margin-bottom:0}
 
 .item{display:flex;align-items:flex-start;gap:13px;background:var(--surface);border:1px solid transparent;border-radius:13px;padding:14px 16px;margin-bottom:9px;box-shadow:0 1px 2px rgba(20,20,40,.05),0 1px 1px rgba(20,20,40,.03);transition:box-shadow .14s,opacity .25s}
@@ -658,6 +659,7 @@ function renderList(){
   const host=$("#list");
   let head = editing==="__new__" ? editForm({title:"",desc:"",devices:["Web"],type:"Visual",priority:"Medium",status:"Open"},"__new__") : "";
   if(!rows.length&&!head){host.innerHTML=`<div class="empty">Nothing here with these filters.</div>`;return;}
+  if(F.sort){const sorted=[...rows].sort((a,b)=>F.sort==="new"?itemDate(b).localeCompare(itemDate(a)):itemDate(a).localeCompare(itemDate(b)));host.classList.toggle("selecting",selecting);host.innerHTML=head+`<div class="flatlist">${sorted.map(i=>i.id===editing?editForm(i,i.id):itemHTML(i)).join("")}</div>`;wireList();return;}
   let groups;
   if(F.group==="priority")groups=PRIOS.map(p=>({k:p,note:TNOTE[p],col:`var(--${p.toLowerCase()})`,items:rows.filter(i=>i.priority===p)})).filter(g=>g.items.length);
   else groups=[...new Set(rows.map(i=>i.area))].map(a=>({k:a,note:"",col:"var(--primary)",items:rows.filter(i=>i.area===a).sort((x,y)=>PRANK[x.priority]-PRANK[y.priority])}));
@@ -674,7 +676,7 @@ function itemHTML(i){
   return `<div class="item ${done?'done':''}${selecting&&selected.has(i.id)?' selected':''}" data-id="${i.id}">
     <button class="check ${selecting?('selmode'+(selected.has(i.id)?' on':'')):(i.status==='Fixed'?'on':'')}" data-check="${i.id}" aria-label="${selecting?'Select':'Mark resolved'}" title="${selecting?'Select':'Mark resolved'}">${CHECK}</button>
     <div class="icontent">
-      <div class="i-r1"><span class="ititle">${esc(i.title)}</span>${i.recur?`<span class="recur" title="Seen in ${i.recur+1} reviews"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>${i.recur+1}</span>`:""}<span class="idiv"></span><span class="chip chip-${i.type.toLowerCase()}">${esc(i.type)}</span>${i.devices.map(d=>`<span class="devpill ${nd(d)}">${esc(d)}</span>`).join("")}${i.proposed?'<span class="prop">PROPOSED</span>':''}</div>
+      <div class="i-r1">${F.sort?`<span class="pdot" style="background:var(--${i.priority.toLowerCase()})" title="${esc(i.priority)}"></span>`:""}<span class="ititle">${esc(i.title)}</span>${i.recur?`<span class="recur" title="Seen in ${i.recur+1} reviews"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>${i.recur+1}</span>`:""}<span class="idiv"></span><span class="chip chip-${i.type.toLowerCase()}">${esc(i.type)}</span>${i.devices.map(d=>`<span class="devpill ${nd(d)}">${esc(d)}</span>`).join("")}${i.proposed?'<span class="prop">PROPOSED</span>':''}</div>
       <div class="idesc">${esc(i.desc)}</div>
       ${(i.images&&i.images.length)?`<div class="ithumbs">${i.images.map(im=>`<img class="ithumb" src="${im.url}" data-full="${im.url}">`).join("")}</div>`:""}
       ${itemDate(i)?`<div class="idaterow"><span class="idatelabel">Date</span><span class="idateval">${fmtItemDate(itemDate(i))}</span></div>`:""}
