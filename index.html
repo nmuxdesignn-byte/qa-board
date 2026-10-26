@@ -43,7 +43,7 @@ h1{font-family:var(--font-disp);font-weight:600;letter-spacing:-.02em;font-size:
 .secrow h2{font-family:var(--font-disp);font-size:13px;letter-spacing:.02em;text-transform:uppercase;color:var(--mut);margin:0;font-weight:600}
 .secrow .meta{font-family:inherit;font-size:11px;color:var(--faint)}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;padding-bottom:60px}
-.card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s;min-height:190px;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(20,20,40,.04)}
+.card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s;min-height:206px;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(20,20,40,.04)}
 .card:hover{border-color:var(--line2);transform:translateY(-2px);box-shadow:0 10px 26px rgba(20,20,40,.1)}
 .ring{position:absolute;top:16px;right:16px;width:40px;height:40px}
 .ring .pct{font-family:inherit;font-size:10px;fill:var(--mut)}
@@ -201,7 +201,17 @@ button.metapill{cursor:pointer}
 .msel.open .mselpanel{display:block}
 .mselopt{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;font-size:12.5px;cursor:pointer;color:var(--txt)}
 .mselopt:hover{background:var(--surface2)}
-.mselopt input{width:16px;height:16px;accent-color:var(--primary);cursor:pointer;margin:0;flex:none}
+.mselopt input{display:none}
+.mselbox{width:20px;height:20px;border-radius:7px;border:1.5px solid var(--line2);background:transparent;position:relative;flex:none;transition:.15s}
+.mselbox svg{position:absolute;inset:0;margin:auto;opacity:0;transform:scale(.3);transition:transform .2s cubic-bezier(.3,1.5,.5,1),opacity .15s}
+.mselopt input:checked+.mselbox{background:var(--primary);border-color:var(--primary)}
+.mselopt input:checked+.mselbox svg{opacity:1;transform:scale(1)}
+.sselopt{display:block;width:100%;text-align:left;background:transparent;border:0;padding:8px 10px;border-radius:7px;font-size:12.5px;color:var(--txt);cursor:pointer;font-family:inherit}
+.sselopt:hover{background:var(--surface2)}
+.sselopt.on{background:var(--surface2);font-weight:600}
+.idaterow{display:flex;align-items:center;gap:8px;margin-top:11px}
+.idatelabel{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:600}
+.idateval{font-size:11.5px;color:var(--mut);font-weight:500}
 .fgroup{display:flex;flex-direction:column;gap:8px}
 .fgroup .lab{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
 .fgroup .opts{display:flex;gap:7px;flex-wrap:wrap}
@@ -456,7 +466,7 @@ const SHARED = /^https:\/\/[a-z0-9-]+\.supabase\.co/i.test(SUPABASE_URL) && !/YO
 const REST = SUPABASE_URL.replace(/\/+$/,"") + "/rest/v1/feedback";
 const HEAD = Object.assign({apikey:SUPABASE_ANON_KEY,"Content-Type":"application/json"}, /^eyJ/.test(SUPABASE_ANON_KEY)?{Authorization:"Bearer "+SUPABASE_ANON_KEY}:{});
 function toDB(i){const o={id:i.id,flow:i.flow,area:i.area,title:i.title,description:i.desc,devices:i.devices,type:i.type,priority:i.priority,status:i.status,proposed:!!i.proposed,designer:i.designer||"",developer:i.developer||"",images:Array.isArray(i.images)?i.images:[]};if(i.recur){o.recur=i.recur;o.recur_at=i.recurAt||null;}return o;}
-function fromDB(r){return {id:r.id,flow:r.flow,area:r.area||"General",title:r.title,desc:r.description||"",devices:Array.isArray(r.devices)?r.devices:[],type:r.type,priority:r.priority,status:r.status,proposed:!!r.proposed,designer:r.designer||"",developer:r.developer||"",images:Array.isArray(r.images)?r.images:[],recur:r.recur||0,recurAt:r.recur_at||""};}
+function fromDB(r){return {id:r.id,flow:r.flow,area:r.area||"General",title:r.title,desc:r.description||"",devices:Array.isArray(r.devices)?r.devices:[],type:r.type,priority:r.priority,status:r.status,proposed:!!r.proposed,designer:r.designer||"",developer:r.developer||"",images:Array.isArray(r.images)?r.images:[],recur:r.recur||0,recurAt:r.recur_at||"",created:(r.created_at||"").slice(0,10)};}
 const BUCKET="feedback-images";
 let editImages=[];
 let collapsed=new Set();
@@ -493,6 +503,7 @@ async function boot(){
     }catch(e){setSync("err");const s=load();if(s)ITEMS=s;}
     ["impbtn","rstbtn"].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display="none";});
   }else{const s=load();if(s)ITEMS=s;setSync("local");}
+  migrateDevices();
   renderDash();
 }
 
@@ -501,7 +512,7 @@ const SEED=JSON.parse(JSON.stringify(ITEMS));
 const STORE_KEY="qa_board_v1";
 function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(ITEMS));}catch(e){}}
 function load(){try{const r=localStorage.getItem(STORE_KEY);if(r){const d=JSON.parse(r);if(Array.isArray(d)&&d.length)return d;}}catch(e){}return null;}
-(function(){const s=load();if(s)ITEMS=s;})();
+(function(){const s=load();if(s)ITEMS=s;migrateDevices();})();
 function exportJSON(){try{const blob=new Blob([JSON.stringify(ITEMS,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="qa-board.json";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href);toast("Exported qa-board.json");}catch(e){toast("Export failed");}}
 function importJSON(file){const fr=new FileReader();fr.onload=()=>{try{const d=JSON.parse(fr.result);if(Array.isArray(d)&&d.length){ITEMS=d;save();toast("Imported "+d.length+" items");view.name==="flow"&&ITEMS.some(i=>i.flow===view.flow)?renderFlow():renderDash();}else toast("File has no items");}catch(e){toast("Not valid JSON");}};fr.readAsText(file);}
 function resetSeed(){if(confirm("Reset the board to the original seeded data? Changes saved in this browser will be lost.")){ITEMS=JSON.parse(JSON.stringify(SEED));save();renderDash();toast("Reset to seed");}}
@@ -515,8 +526,13 @@ const TNOTE={Blocker:"fix before ship",High:"pick these first",Medium:"then thes
 const CHECK=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
 const nd=d=>d.replace("-","");
 const TODAY=new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
+function migrateDevices(){ITEMS.forEach(i=>{i.devices=(i.devices||[]).map(d=>d==="Mobile"?"M-Web":d).filter((d,k,a)=>a.indexOf(d)===k);});}
+function isoOf(x){const d=new Date(x);return isNaN(d)?"":d.toISOString().slice(0,10);}
+function fmtItemDate(iso){if(!iso)return "";const d=new Date(iso);return isNaN(d)?"":d.toLocaleDateString("en-GB",{day:"2-digit",month:"short"});}
+function itemDate(i){return i.created||isoOf(DATES[i.flow]||TODAY);}
+function shortYr(d){return (d||"").replace(/\b\d{4}\b/,m=>"\u2019"+m.slice(-2));}
 let view={name:"dash"};
-let F={tab:"active",dev:"All",types:new Set(),status:new Set(),recurOnly:false,group:"priority",q:"",panel:false,search:false};
+let F={tab:"active",dev:"All",types:new Set(),status:new Set(),recurOnly:false,sort:"",group:"priority",q:"",panel:false,search:false};
 function fbadge(){const n=F.types.size+F.status.size+(F.recurOnly?1:0),bb=document.getElementById("fbadge");if(bb){bb.textContent=n;bb.classList.toggle("hide",!n);}}
 let editing=null; // id | "__new__" | null
 const $=s=>document.querySelector(s);
@@ -563,7 +579,7 @@ function renderDash(){
   <div class="cards">${fs.map(f=>{const p=f.total?Math.round(f.fixed/f.total*100):0;
     return `<div class="card" data-flow="${esc(f.name)}" tabindex="0" role="button">${ring(p)}
     <h3>${esc(f.name)}</h3>
-    <div class="cardmeta"><span class="cardupd">Updated ${esc(f.date)}</span><span class="cmdiv"></span><div class="devpills">${f.devs.map(d=>`<span class="dpill">${esc(d)}</span>`).join("")}</div>${metaPills({designer:f.designer,developer:f.developer})}</div>
+    <div class="cardmeta"><span class="cardupd">Updated ${esc(shortYr(f.date))}</span><span class="cmdiv"></span><div class="devpills">${["Web","M-Web","Tab"].every(d=>f.devs.includes(d))?`<span class="dpill">All devices</span>`:f.devs.map(d=>`<span class="dpill">${esc(d)}</span>`).join("")}</div>${metaPills({designer:f.designer,developer:f.developer})}</div>
     <div class="cardfoot"><div class="bignums"><div><div class="n">${f.open}</div><div class="l">open</div></div><div class="blk"><div class="n">${f.blk}</div><div class="l">blockers</div></div></div><span class="goarrow">→</span></div></div>`;}).join("")}<div class="card newflow" id="newflowcard" tabindex="0" role="button"><div class="nf-plus"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div><div class="nf-text"><div class="nf-label">New flow</div><div class="nf-sub">Start testing a new flow</div></div></div></div></div>`;
   document.querySelectorAll(".card[data-flow]").forEach(c=>{const go=()=>openFlow(c.dataset.flow);
     c.addEventListener("click",go);c.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});});
@@ -573,7 +589,7 @@ function renderDash(){
 function openNewFlowModal(){const sc=document.getElementById("nfScrim");["nf_name","nf_designer","nf_dev"].forEach(id=>document.getElementById(id).value="");sc.classList.add("on");document.getElementById("nf_name").focus();}
 function closeNewFlowModal(){document.getElementById("nfScrim").classList.remove("on");}
 function createFlow(){const name=document.getElementById("nf_name").value.trim();if(!name){document.getElementById("nf_name").focus();return;}pendingFlow={flow:name,designer:document.getElementById("nf_designer").value.trim(),developer:document.getElementById("nf_dev").value.trim()};closeNewFlowModal();openFlow(name,true);}
-function openFlow(n,startAdd){selected.clear();selecting=false;view={name:"flow",flow:n};F={tab:"active",dev:"All",types:new Set(),status:new Set(),recurOnly:false,group:"priority",q:"",panel:false,search:false};editing=startAdd?"__new__":null;if(startAdd)editImages=[];renderFlow();window.scrollTo(0,0);if(startAdd){const el=document.querySelector(".item.editing .ef-title");if(el)el.focus();}}
+function openFlow(n,startAdd){selected.clear();selecting=false;view={name:"flow",flow:n};F={tab:"active",dev:"All",types:new Set(),status:new Set(),recurOnly:false,sort:"",group:"priority",q:"",panel:false,search:false};editing=startAdd?"__new__":null;if(startAdd)editImages=[];renderFlow();window.scrollTo(0,0);if(startAdd){const el=document.querySelector(".item.editing .ef-title");if(el)el.focus();}}
 function flowItems(){return ITEMS.filter(i=>i.flow===view.flow);}
 function baseFiltered(){return flowItems().filter(i=>{
   if(F.dev!=="All"&&!i.devices.includes(F.dev))return false;
@@ -587,7 +603,7 @@ function renderFlow(){
   const devs=["All",...new Set(flowItems().flatMap(i=>i.devices))];
   $("#app").innerHTML=`<div class="fhead"><div class="wrap">
     <div class="t"><h1>${esc(view.flow)}</h1><div class="flowkebab-wrap"><button class="flowkebab" id="flowKebab" aria-label="Flow options"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button><div class="flowmenu hide" id="flowMenu"><button class="flowmenu-del" id="flowDelete">Delete flow</button></div></div></div>
-    <p class="fsub datesub">Updated ${esc(DATES[view.flow]||TODAY)}</p>
+    <p class="fsub datesub">Updated ${esc(shortYr(DATES[view.flow]||TODAY))}</p>
     ${headerMeta()}</div></div>
   <div class="tabsbar"><div class="wrap"><div class="tabs" id="tabs">
     <button class="tab" data-v="all"><span class="cnt" id="c-all">0</span><span class="lbl">All</span></button>
@@ -605,9 +621,10 @@ function renderFlow(){
     </div>
     <div class="fpanel" id="fpanel">
       <div class="fgroup"><span class="lab">Group by</span><div class="seg" id="groupseg"><button data-v="priority" aria-pressed="true">Priority</button><button data-v="area" aria-pressed="false">Section</button></div></div>
-      <div class="fgroup"><span class="lab">Error type</span><div class="msel" data-msel="type"><button type="button" class="mselbtn"><span class="msellabel">Any</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button><div class="mselpanel">${TYPES.map(t=>`<label class="mselopt"><input type="checkbox" data-mv="${t}"><span>${t}</span></label>`).join("")}</div></div></div>
-      <div class="fgroup"><span class="lab">Status</span><div class="msel" data-msel="status"><button type="button" class="mselbtn"><span class="msellabel">Any</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button><div class="mselpanel">${STATUSES.map(st=>`<label class="mselopt"><input type="checkbox" data-mv="${esc(st)}"><span>${esc(st)}</span></label>`).join("")}</div></div></div>
+      <div class="fgroup"><span class="lab">Error type</span><div class="msel" data-msel="type"><button type="button" class="mselbtn"><span class="msellabel">Any</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button><div class="mselpanel">${TYPES.map(t=>`<label class="mselopt"><input type="checkbox" data-mv="${t}"><span class="mselbox">${CHECK}</span><span>${t}</span></label>`).join("")}</div></div></div>
+      <div class="fgroup"><span class="lab">Status</span><div class="msel" data-msel="status"><button type="button" class="mselbtn"><span class="msellabel">Any</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button><div class="mselpanel">${STATUSES.map(st=>`<label class="mselopt"><input type="checkbox" data-mv="${esc(st)}"><span class="mselbox">${CHECK}</span><span>${esc(st)}</span></label>`).join("")}</div></div></div>
       <div class="fgroup"><span class="lab">Flags</span><div class="opts"><button class="tchip" id="recurchip" aria-pressed="false">↻ Recurring</button></div></div>
+      <div class="fgroup"><span class="lab">Date added</span><div class="msel ssel" data-ssel="sort"><button type="button" class="mselbtn"><span class="msellabel">Default</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button><div class="mselpanel"><button type="button" class="sselopt on" data-sv="">Default (priority)</button><button type="button" class="sselopt" data-sv="new">Newest first</button><button type="button" class="sselopt" data-sv="old">Oldest first</button></div></div></div>
     </div>
     <div class="board" id="list"></div><div class="selbar" id="selbar"><span class="selcount">0 selected</span><div class="selacts"><button data-sel="resolve"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Mark resolved</button><button data-sel="delete"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M18 6l-1 14H7L6 6"/></svg>Delete</button><span class="seldiv"></span><button data-sel="clear">Clear</button></div></div>
   </div>`;
@@ -620,6 +637,7 @@ function wire(){
   $("#groupseg").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{F.group=b.dataset.v;setseg($("#groupseg"),b.dataset.v);renderList();}));
   $("#fpanel").querySelectorAll(".mselbtn").forEach(btn=>btn.addEventListener("click",e=>{e.stopPropagation();const m=btn.closest(".msel"),was=m.classList.contains("open");$("#fpanel").querySelectorAll(".msel").forEach(x=>x.classList.remove("open"));if(!was)m.classList.add("open");}));
   $("#fpanel").querySelectorAll(".mselpanel input").forEach(cb=>cb.addEventListener("change",()=>{const m=cb.closest(".msel"),set=m.dataset.msel==="type"?F.types:F.status,v=cb.dataset.mv;cb.checked?set.add(v):set.delete(v);m.querySelector(".msellabel").textContent=set.size?set.size+" selected":"Any";fbadge();renderList();}));
+  $("#fpanel").querySelectorAll(".sselopt").forEach(o=>o.addEventListener("click",()=>{const m=o.closest(".msel");F.sort=o.dataset.sv;m.querySelectorAll(".sselopt").forEach(x=>x.classList.toggle("on",x===o));m.querySelector(".msellabel").textContent=({"":"Default",new:"Newest",old:"Oldest"})[F.sort];m.classList.remove("open");renderList();}));
   {const rc=$("#recurchip");if(rc)rc.addEventListener("click",()=>{F.recurOnly=!F.recurOnly;rc.setAttribute("aria-pressed",F.recurOnly.toString());fbadge();renderList();});}
   $("#filterbtn").addEventListener("click",()=>{F.panel=!F.panel;$("#fpanel").classList.toggle("on",F.panel);$("#filterbtn").setAttribute("aria-pressed",F.panel);});
   $("#searchbtn").addEventListener("click",()=>{F.search=!F.search;$("#sbox").classList.toggle("open",F.search);$("#searchbtn").setAttribute("aria-pressed",F.search);if(F.search)$("#q").focus();else{F.q="";$("#q").value="";renderList();}});
@@ -643,6 +661,8 @@ function renderList(){
   let groups;
   if(F.group==="priority")groups=PRIOS.map(p=>({k:p,note:TNOTE[p],col:`var(--${p.toLowerCase()})`,items:rows.filter(i=>i.priority===p)})).filter(g=>g.items.length);
   else groups=[...new Set(rows.map(i=>i.area))].map(a=>({k:a,note:"",col:"var(--primary)",items:rows.filter(i=>i.area===a).sort((x,y)=>PRANK[x.priority]-PRANK[y.priority])}));
+  if(F.sort==="new")groups.forEach(g=>g.items.sort((a,b)=>itemDate(b).localeCompare(itemDate(a))));
+  else if(F.sort==="old")groups.forEach(g=>g.items.sort((a,b)=>itemDate(a).localeCompare(itemDate(b))));
   host.classList.toggle("selecting",selecting);
   host.innerHTML=head+groups.map(g=>{const key=F.group+":"+g.k;const col=collapsed.has(key);const t=TIER_TINT[g.k]||["#F2F2F3","#FAFAFA"];return `<div class="tier"><div class="tierhead" data-tier="${esc(key)}" style="background:${t[0]}"><span class="ctwrap"><span class="ct">${g.items.length}</span><button type="button" class="check tiersel ${g.items.length&&g.items.every(x=>selected.has(x.id))?'on':''}" data-ids="${g.items.map(x=>x.id).join(',')}" title="Select all ${esc(g.k)} issues" aria-label="Select all ${esc(g.k)} issues">${CHECK}</button></span><h4>${esc(g.k)}</h4>${g.note?`<span class="tdiv"></span><span class="note">${g.note}</span>`:""}<span class="tchev ${col?'col':''}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></div>${col?"":`<div class="tier-body" style="background:${t[1]}">${g.items.map(i=>i.id===editing?editForm(i,i.id):itemHTML(i)).join("")}</div>`}</div>`;}).join("");
   wireList();
@@ -657,6 +677,7 @@ function itemHTML(i){
       <div class="i-r1"><span class="ititle">${esc(i.title)}</span>${i.recur?`<span class="recur" title="Seen in ${i.recur+1} reviews"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>${i.recur+1}</span>`:""}<span class="idiv"></span><span class="chip chip-${i.type.toLowerCase()}">${esc(i.type)}</span>${i.devices.map(d=>`<span class="devpill ${nd(d)}">${esc(d)}</span>`).join("")}${i.proposed?'<span class="prop">PROPOSED</span>':''}</div>
       <div class="idesc">${esc(i.desc)}</div>
       ${(i.images&&i.images.length)?`<div class="ithumbs">${i.images.map(im=>`<img class="ithumb" src="${im.url}" data-full="${im.url}">`).join("")}</div>`:""}
+      ${itemDate(i)?`<div class="idaterow"><span class="idatelabel">Date</span><span class="idateval">${fmtItemDate(itemDate(i))}</span></div>`:""}
     </div>
     <div class="ictrl">
       <span class="statpill"><span class="sd" style="background:${sd}"></span><select data-st="${i.id}">${STATUSES.map(s=>`<option ${s===i.status?'selected':''}>${s}</option>`).join("")}</select></span>
@@ -752,7 +773,7 @@ function saveEdit(card,force){
   if(!devices.length){toast("Pick a device");return;}
   const p={title,desc:card.querySelector(".ef-desc").value.trim(),devices,type:card.querySelector(".ef-type").value,priority:card.querySelector(".ef-prio").value,status:card.querySelector(".ef-status").value};
   const imgs=editImages.filter(x=>!x.loading).map(x=>({url:x.url,path:x.path}));
-  if(id==="__new__"){if(!force){const dup=findDup(title);if(dup){showDupDialog(dup);return;}}const meta=(pendingFlow&&pendingFlow.flow===view.flow)?pendingFlow:flowMeta(view.flow);const ni={id:"N"+Date.now().toString(36),flow:view.flow,area:"General",proposed:false,designer:meta.designer||"",developer:meta.developer||"",images:imgs,...p};ITEMS.unshift(ni);persistInsert(ni);if(pendingFlow&&pendingFlow.flow===view.flow)pendingFlow=null;toast("Added");}
+  if(id==="__new__"){if(!force){const dup=findDup(title);if(dup){showDupDialog(dup);return;}}const meta=(pendingFlow&&pendingFlow.flow===view.flow)?pendingFlow:flowMeta(view.flow);const ni={id:"N"+Date.now().toString(36),flow:view.flow,area:"General",proposed:false,created:new Date().toISOString().slice(0,10),designer:meta.designer||"",developer:meta.developer||"",images:imgs,...p};ITEMS.unshift(ni);persistInsert(ni);if(pendingFlow&&pendingFlow.flow===view.flow)pendingFlow=null;toast("Added");}
   else{const it=ITEMS.find(x=>x.id===id);Object.assign(it,p);it.images=imgs;persistPatch(id,toDB(it));toast("Saved");}
   editing=null;renderList();
 }
